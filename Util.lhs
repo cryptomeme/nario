@@ -5,21 +5,23 @@ import Data.IORef (newIORef, readIORef, writeIORef, modifyIORef)
 import Control.Concurrent (threadDelay)
 import Multimedia.SDL
 
+import Const
+
 -- キーボード処理
 
-data GameKey =
-	GKUp | GKDown | GKLeft | GKRight | GKRotate
-	deriving (Eq,Show,Enum)
+data PadBtn =
+	PadU | PadD | PadL | PadR | PadA | PadB
+	deriving (Eq, Show, Enum)
 
 data KeyState =
 	Pushed | Pushing | Released | Releasing
-	deriving (Eq,Show)
+	deriving (Eq, Show)
 
 isPressed Pushed  = True
 isPressed Pushing = True
 isPressed _       = False
 
-type KeyProc = GameKey -> KeyState
+type KeyProc = PadBtn -> KeyState
 
 keyProc bef cur gk
 	| not bp && not cp = Releasing
@@ -27,14 +29,16 @@ keyProc bef cur gk
 	| bp     && not cp = Released
 	| bp     && cp     = Pushing
 	where
-		bp = (mapPhyKey gk) `elem` bef
-		cp = (mapPhyKey gk) `elem` cur
+		bp = any (flip elem bef) phykeys
+		cp = any (flip elem cur) phykeys
+		phykeys = mapPhyKey gk
 
-mapPhyKey GKUp     = SDLK_UP
-mapPhyKey GKDown   = SDLK_DOWN
-mapPhyKey GKLeft   = SDLK_LEFT
-mapPhyKey GKRight  = SDLK_RIGHT
-mapPhyKey GKRotate = SDLK_z
+mapPhyKey PadU = [SDLK_UP, SDLK_i]
+mapPhyKey PadD = [SDLK_DOWN, SDLK_k]
+mapPhyKey PadL = [SDLK_LEFT, SDLK_j]
+mapPhyKey PadR = [SDLK_RIGHT, SDLK_l]
+mapPhyKey PadA = [SDLK_SPACE]
+mapPhyKey PadB = [SDLK_LSHIFT, SDLK_RSHIFT]
 
 -- 時間調節
 
@@ -61,3 +65,27 @@ elapseTime fps = do
   where
     toPsec dt = toInteger (tdMin dt * 60 + tdSec dt) * picosec + tdPicosec dt
     picosec = 1000000000000
+
+
+
+-- 画像リソース
+type ImageResource = [(ImageType, Surface)]
+
+
+-- 画像リソース読み込み
+loadImageResource :: IO ImageResource
+loadImageResource = mapM load images
+	where
+		load imgtype = do
+			sur <- loadBMP $ ("img/" ++) $ imageFn imgtype
+--			colorKey <- mapRGB (surfacePixelFormat sur) $ Color r g b a
+			setColorKey sur [SRCCOLORKEY] 0
+			return (imgtype, sur)
+		r = 0
+		g = 0
+		b = 0
+		a = 255
+
+
+getImageSurface :: ImageResource -> ImageType -> Surface
+getImageSurface imgres t = fromJust $ lookup t imgres
