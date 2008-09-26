@@ -3,15 +3,13 @@
 
 module Main where
 
-import Data.List
-import Data.IORef
-import System.Time
-import System.Random
-import Control.Concurrent
-import Control.Monad
 import Multimedia.SDL
-
+import Control.Monad (when)
+import Data.IORef (newIORef, readIORef, writeIORef, modifyIORef)
 import Data.Maybe (fromJust)
+
+import SDLUtil
+import Util
 
 -----------------------------------
 -- システム周り 
@@ -23,7 +21,11 @@ wndTitle = "Nario in Haskell"
 wndSize  = sz 256 240
 
 
-data ImageType = ImgNario00 | ImgNario01 | ImgNario02 | ImgNario03 | ImgNario04
+-- 画像
+data ImageType =
+		ImgNario00 | ImgNario01 | ImgNario02 | ImgNario03 | ImgNario04
+	|	ImgNario10 | ImgNario11 | ImgNario12 | ImgNario13 | ImgNario14
+	|	ImgBlock1 | ImgBlock2 | ImgBlock3 | ImgBlock4 | ImgBlock5
 	deriving Eq
 
 imageFn ImgNario00 = "nario00.bmp"
@@ -31,78 +33,132 @@ imageFn ImgNario01 = "nario01.bmp"
 imageFn ImgNario02 = "nario02.bmp"
 imageFn ImgNario03 = "nario03.bmp"
 imageFn ImgNario04 = "nario04.bmp"
+imageFn ImgNario10 = "nario10.bmp"
+imageFn ImgNario11 = "nario11.bmp"
+imageFn ImgNario12 = "nario12.bmp"
+imageFn ImgNario13 = "nario13.bmp"
+imageFn ImgNario14 = "nario14.bmp"
+imageFn ImgBlock1 = "block1.bmp"
+imageFn ImgBlock2 = "block2.bmp"
+imageFn ImgBlock3 = "block3.bmp"
+imageFn ImgBlock4 = "block4.bmp"
+imageFn ImgBlock5 = "block5.bmp"
 
-images = [ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04]
+images = [
+	ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04,
+	ImgNario10, ImgNario11, ImgNario12, ImgNario13, ImgNario14,
+	ImgBlock1, ImgBlock2, ImgBlock3, ImgBlock4, ImgBlock5
+	]
 
 
 
--- キーボード処理
+type ImageResource = [(ImageType, Surface)]
 
-data GameKey =
-	GKUp | GKDown | GKLeft | GKRight | GKRotate
-	deriving (Eq,Show,Enum)
 
-data KeyState =
-	Pushed | Pushing | Released | Releasing
-	deriving (Eq,Show)
 
-isPressed Pushed  = True
-isPressed Pushing = True
-isPressed _       = False
 
-type KeyProc = GameKey -> KeyState
+fieldMap = [
+	"                ",
+	"                ",
+	"                ",
+	"                ",
+	"                ",
+	"                ",
+	"        O?O     ",
+	"                ",
+	"                ",
+	"       O?O?O    ",
+	"                ",
+	"                ",
+	"                ",
+	"@@@@@@@@@@@@@@@@",
+	"@@@@@@@@@@@@@@@@"
+	]
 
-keyProc bef cur gk
-	| not bp && not cp = Releasing
-	| not bp && cp     = Pushed
-	| bp     && not cp = Released
-	| bp     && cp     = Pushing
+chr2img '@' = ImgBlock1
+chr2img 'O' = ImgBlock2
+chr2img '?' = ImgBlock4
+
+renderMap sur imgres = sequence_ $ concatMap lineProc $ zip [0..] fieldMap
 	where
-		bp = (mapPhyKey gk) `elem` bef
-		cp = (mapPhyKey gk) `elem` cur
+		lineProc (y, ln) = map (cellProc y) $ zip [0..] ln
+		cellProc y (x, c) = do
+			if c == ' '
+				then return ()
+				else do
+					blitSurface (getImageSurface imgres $ chr2img c) Nothing sur $ pt (x*16) (y*16)
+					return ()
 
-mapPhyKey GKUp     = SDLK_UP
-mapPhyKey GKDown   = SDLK_DOWN
-mapPhyKey GKLeft   = SDLK_LEFT
-mapPhyKey GKRight  = SDLK_RIGHT
-mapPhyKey GKRotate = SDLK_z
 
--- 時間調節
 
-elapseTime :: Integer -> IO (IO (Int,Bool))
-elapseTime fps = do
-  let frametime = picosec `div` fps
-  tm <- getClockTime
-  st <- newIORef ((0,0,noTimeDiff), (1,tm))
-  return $ do
-    ((bef,cur,fdt), (cnt,bt)) <- readIORef st
-    ct       <- getClockTime
-    let dt   = diffClockTimes ct bt
-        ndt  = diffClockTimes ct tm
-        adj  = frametime*cnt - toPsec dt
-        nc   = if cnt==fps then (1,ct) else (cnt+1,bt)
-        (nbef,ncur) = if tdSec fdt /= tdSec ndt then (cur,0) else (bef,cur)
-    if adj < 0 then do
-        writeIORef st ((nbef,ncur,ndt), nc)
-        return (bef, False)
-      else do
-        writeIORef st ((nbef,ncur+1,ndt), nc)
-        threadDelay $ fromInteger $ min 16666 $ adj `div` 1000000
-        return (bef, True)
-  where
-    toPsec dt = toInteger (tdMin dt * 60 + tdSec dt) * picosec + tdPicosec dt
-    picosec = 1000000000000
+
+data Player = Player {
+	x :: Int,
+	y :: Int,
+	lr :: Int
+	}
+
+one = 256
+
+newPlayer = Player {
+	x = 1 * 16 * one,
+	y = 12 * 16 * one,
+	lr = 1
+	}
+
+updatePlayer :: Player -> KeyProc -> Player
+updatePlayer player kp =
+	player { x = x', y = y', lr = lr' }
+	where
+		x'
+			| isPressed (kp GKLeft)		= (x player) - 1 * one
+			| isPressed (kp GKRight)	= (x player) + 1 * one
+			| otherwise					= x player
+		y'
+			| isPressed (kp GKUp)		= (y player) - 1 * one
+			| isPressed (kp GKDown)		= (y player) + 1 * one
+			| otherwise					= y player
+		lr'
+			| isPressed (kp GKLeft)		= 0
+			| isPressed (kp GKRight)	= 1
+			| otherwise					= lr player
+
+renderPlayer sur player imgres =
+	blitSurface (getImageSurface imgres chr) Nothing sur pos
+	where
+		pos = pt ((x player) `div` one) ((y player) `div` one)
+		chr = if (lr player) == 0
+				then ImgNario00
+				else ImgNario10
+
+
+-- 画像リソース読み込み
+loadImageResource :: IO ImageResource
+loadImageResource = mapM load images
+	where
+		load imgtype = do
+			sur <- loadBMP $ ("img/" ++) $ imageFn imgtype
+--			colorKey <- mapRGB (surfacePixelFormat sur) $ Color r g b a
+			setColorKey sur [SRCCOLORKEY] 0
+			return (imgtype, sur)
+		r = 0
+		g = 0
+		b = 0
+		a = 255
+
+
+getImageSurface :: ImageResource -> ImageType -> Surface
+getImageSurface imgres t = fromJust $ lookup t imgres
 
 -- メインループ
 
 main :: IO ()
 main = sdlStart [VIDEO] wndTitle wndSize $ \sur -> do
-	is  <- initState
-	gs  <- newIORef is
-	res2 <- loadResource2
+	gs <- newIORef initState
+	imgres <- loadImageResource
 
 	et <- elapseTime 60
-	loop et gs onProcess (onDraw sur res2) []
+	loop et gs onProcess (onDraw sur imgres) []
 
 loop et gs op od bef = do
 	quit <- checkEvent
@@ -136,32 +192,21 @@ sdlStart fs title (Size w h) p = do
 -- ゲームの状態
 data GameState =
 	GameState {
-		dmy :: Int
+		pl :: Player
 	}
 
 -- 開始状態
-initState :: IO GameState
-initState = do
-	return GameState
-		{ dmy = 0
+initState :: GameState
+initState =
+	GameState {
+		pl = newPlayer
 		}
 
-
-
-type Resource = (Surface,Surface,Surface,Surface, AudioData)
-
--- リソース読み込み
-loadResource2 :: IO [(ImageType, Surface)]
-loadResource2 = mapM f images
-	where
-		f t = do
-			sur <- loadBMP $ ("img/" ++) $ imageFn t
-			return (t, sur)
 
 -- 毎フレームの処理
 onProcess :: KeyProc -> GameState -> GameState
 onProcess kp gs
-	| otherwise		= gs { dmy = dmy gs + 1 }
+	| otherwise		= gs { pl = updatePlayer (pl gs) kp}
 
 
 {-
@@ -185,12 +230,17 @@ playAudioData ad = do
 -}
 
 
+backColor = 0x2891ff
+
+
 -- 描画処理
-onDraw :: Surface -> [(ImageType, Surface)] -> GameState -> IO ()
-onDraw sur res gs = do
-	fillRect sur Nothing 0x000000
-	let c = lookup ImgNario00 res
-	blitSurface (fromJust c) Nothing sur $ pt  70 20
+onDraw :: Surface -> ImageResource -> GameState -> IO ()
+onDraw sur imgres gs = do
+	fillRect sur Nothing backColor
+
+	renderMap sur imgres
+	renderPlayer sur (pl gs) imgres
 
 	flipSurface sur
 	return ()
+
