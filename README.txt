@@ -20,3 +20,6 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 	シフトキー
 		Bボタン
 
+	エスケープキー
+		終了
+

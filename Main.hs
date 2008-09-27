@@ -96,8 +96,10 @@ onDraw :: Surface -> ImageResource -> GameState -> IO ()
 onDraw sur imgres gs = do
 	fillRect sur Nothing backColor
 
-	renderField sur imgres
-	renderPlayer sur (pl gs) imgres
+	let scrx = getScrollPos (pl gs)
+
+	renderField sur imgres scrx
+	renderPlayer sur imgres scrx (pl gs)
 
 	flipSurface sur
 	return ()

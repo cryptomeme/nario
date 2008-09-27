@@ -5,7 +5,8 @@ module Player (
 	Player(..),
 	newPlayer,
 	updatePlayer,
-	renderPlayer
+	renderPlayer,
+	getScrollPos
 ) where
 
 import Multimedia.SDL
@@ -27,6 +28,7 @@ data Player = Player {
 	y :: Int,
 	vx :: Int,
 	vy :: Int,
+	scrx :: Int,
 	stand :: Bool,
 
 	lr :: Int,
@@ -39,6 +41,7 @@ newPlayer = Player {
 	y = 1 * chrSize * one,
 	vx = 0,
 	vy = 0,
+	scrx = 0,
 	stand = False,
 
 	lr = 1,
@@ -69,14 +72,19 @@ moveX kp player =
 		vx'
 			| ax /= 0	= rangeadd (vx player) ax (-maxspd) maxspd
 			| otherwise	= friction (vx player) acc
-		x' = (x player) + vx'
+		x' = max xmin $ (x player) + vx'
+		scrx'
+			| vx' > 0 && (x' - (scrx player)) `div` one > 160	= (scrx player) + vx'
+			| otherwise											= (scrx player)
+
 		padl = if isPressed (kp PadL) then 1 else 0
 		padr = if isPressed (kp PadR) then 1 else 0
 		maxspd
 			| isPressed (kp PadB)	= maxVx * 2
 			| otherwise				= maxVx
+		xmin = (scrx player) + chrSize `div` 2 * one
 
-		player' = player { x = x', vx = vx' }
+		player' = player { x = x', vx = vx', scrx = scrx' }
 
 		lr' =
 			case (-padl + padr) of
@@ -144,8 +152,11 @@ updatePlayer kp fld player =
 			| otherwise			= jump fld
 
 
-renderPlayer sur player imgres = do
+getScrollPos :: Player -> Int
+getScrollPos player = (scrx player) `div` one
+
+renderPlayer sur imgres scrx player = do
 	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
 	where
-		pos = pt ((x player) `div` one - chrSize `div` 2) ((y player) `div` one - chrSize)
+		pos = pt ((x player) `div` one - chrSize `div` 2 - scrx) ((y player) `div` one - chrSize)
 		imgtype = imgTable !! (lr player) !! (pat player)

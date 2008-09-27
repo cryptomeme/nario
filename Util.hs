@@ -99,11 +99,12 @@ loadImageResource = mapM load images
 		load imgtype = do
 			sur <- loadBMP $ ("img/" ++) $ imageFn imgtype
 --			colorKey <- mapRGB (surfacePixelFormat sur) $ Color r g b a
-			setColorKey sur [SRCCOLORKEY] 0
+			let colorKey = 0xff00ff
+			setColorKey sur [SRCCOLORKEY] colorKey
 			return (imgtype, sur)
-		r = 0
+		r = 255
 		g = 0
-		b = 0
+		b = 255
 		a = 255
 
 
