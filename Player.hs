@@ -13,6 +13,13 @@ import Multimedia.SDL
 import Util
 import SDLUtil
 import Const
+import Field
+
+
+maxVx = one * 3
+maxVy = one * 8
+acc = one `div` 6
+jumpVy = -17 * gravity
 
 
 data Player = Player {
@@ -29,18 +36,15 @@ data Player = Player {
 
 newPlayer = Player {
 	x = 1 * chrSize * one,
-	y = 13 * chrSize * one - 1,
+	y = 1 * chrSize * one,
 	vx = 0,
 	vy = 0,
-	stand = True,
+	stand = False,
 
 	lr = 1,
 	pat = 0,
 	anm = 0
 	}
-
-maxVx = one * 3
-acc = one `div` 6
 
 
 patStop = 0
@@ -55,9 +59,11 @@ imgTable = [
 
 
 -- 横移動
-moveLR :: KeyProc -> Player -> Player
-moveLR kp player =
-	player { x = x', vx = vx', lr = lr', pat = pat', anm = anm' }
+moveX :: KeyProc -> Player -> Player
+moveX kp player =
+	if (stand player)
+		then player' { lr = lr', pat = pat', anm = anm' }
+		else player'
 	where
 		ax = (-padl + padr) * acc
 		vx'
@@ -69,6 +75,8 @@ moveLR kp player =
 		maxspd
 			| isPressed (kp PadB)	= maxVx * 2
 			| otherwise				= maxVx
+
+		player' = player { x = x', vx = vx' }
 
 		lr' =
 			case (-padl + padr) of
@@ -84,24 +92,60 @@ moveLR kp player =
 		anmCnt = maxVx * 3
 
 
--- 縦移動
-jumpOrFall :: KeyProc -> Player -> Player
-jumpOrFall kp player =
-	player { y = y' }
+cellCrd :: Int -> Int
+cellCrd x = x `div` (chrSize * one)
+
+
+-- ジャンプ中
+jump :: Field -> Player -> Player
+jump fld player =
+	player { y = y', vy = vy', stand = stand' }
 	where
-		y'
-			| isPressed (kp PadU)	= (y player) - 1 * one
-			| isPressed (kp PadD)	= (y player) + 1 * one
-			| otherwise				= y player
+		vytmp = min maxVy $ (vy player) + gravity
+		ytmp = (y player) + vytmp
+
+		y' = if isGround ytmp then yground ytmp else ytmp
+		vy' = if isGround ytmp then 0 else vytmp
+		stand' = isGround ytmp
+
+		isGround y = isBlock $ fieldRef fld (cellCrd (x player)) (cellCrd y)
+		yground y = (cellCrd y) * (chrSize * one)
 
 
-updatePlayer :: KeyProc -> Player -> Player
-updatePlayer kp =
-	jumpOrFall kp . moveLR kp
+-- 通常時：地面をチェック
+checkFall :: KeyProc -> Field -> Player -> Player
+checkFall kp fld player =
+	player { stand = stand', vy = vy', pat = pat' }
+	where
+		ytmp = (y player) + one
+
+		stand'
+			| isGround ytmp		= not dojump
+			| otherwise			= False		-- 落下開始
+		vy'
+			| not stand' && dojump	= jumpVy
+			| otherwise				= 0
+		pat'
+			| dojump	= patJump
+			| otherwise	= pat player
+
+		dojump = kp PadA == Pushed
+
+		isGround y = isBlock $ fieldRef fld (cellCrd (x player)) (cellCrd y)
+		yground y = (cellCrd y) * (chrSize * one)
+
+
+updatePlayer :: KeyProc -> Field -> Player -> Player
+updatePlayer kp fld player =
+	moveY $ moveX kp player
+	where
+		moveY
+			| (stand player)	= checkFall kp fld
+			| otherwise			= jump fld
 
 
 renderPlayer sur player imgres = do
 	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
 	where
-		pos = pt ((x player) `div` one) ((y player) `div` one - chrSize)
+		pos = pt ((x player) `div` one - chrSize `div` 2) ((y player) `div` one - chrSize)
 		imgtype = imgTable !! (lr player) !! (pat player)

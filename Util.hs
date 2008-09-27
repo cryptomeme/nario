@@ -14,8 +14,8 @@ import Const
 -- x に d を加算した結果が x0～x1 の範囲内を超えないようにする
 -- もとから範囲外だったときはそれ以上遠ざからないように
 rangeadd x d x0 x1
-	| d > 0		= if x < x1 then min (x + d) x1 else x
-	| d < 0		= if x > x0 then max (x + d) x0 else x
+	| d > 0 && x < x1	= min (x + d) x1
+	| d < 0 && x > x0	= max (x + d) x0
 	| otherwise	= x
 
 

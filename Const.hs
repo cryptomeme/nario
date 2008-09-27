@@ -7,6 +7,8 @@ one = 256 :: Int
 -- 1キャラのサイズ
 chrSize = 16 :: Int
 
+-- 重力
+gravity = one `div` 2
 
 -- 画像
 data ImageType =

@@ -10,6 +10,7 @@ import Data.IORef (newIORef, readIORef, writeIORef, modifyIORef)
 import SDLUtil
 import Util
 import Player
+import Field
 import Const
 
 -----------------------------------
@@ -23,47 +24,6 @@ wndSize  = sz 256 240
 
 -- 背景色
 backColor = 0x2891ff		-- 青
-
-
-
-
-
-
--- マップ
-
-fieldMap = [
-	"                ",
-	"                ",
-	"                ",
-	"                ",
-	"                ",
-	"                ",
-	"        O?O     ",
-	"                ",
-	"                ",
-	"       O?O?O    ",
-	"                ",
-	"                ",
-	"                ",
-	"@@@@@@@@@@@@@@@@",
-	"@@@@@@@@@@@@@@@@"
-	]
-
-chr2img '@' = ImgBlock1
-chr2img 'O' = ImgBlock2
-chr2img '?' = ImgBlock4
-
-renderMap sur imgres = sequence_ $ concatMap lineProc $ zip [0..] fieldMap
-	where
-		lineProc (y, ln) = map (cellProc y) $ zip [0..] ln
-		cellProc y (x, c) = do
-			if c == ' '
-				then return ()
-				else do
-					blitSurface (getImageSurface imgres $ chr2img c) Nothing sur $ pt (x*16) (y*16)
-					return ()
-
-
 
 
 
@@ -91,13 +51,13 @@ loop et gs op od bef = do
 checkEvent = do
 	ev <- pollEvent
 	case ev of
-		Just QuitEvent -> return True
+		Just QuitEvent	-> return True
 		Just (KeyboardEvent { kbPress = True, kbKeysym = Keysym { ksSym = ks, ksMod = km } })
 			| ks == SDLK_ESCAPE -> return True
 			| ks == SDLK_F4 && (KMOD_LALT `elem` km ||
 								KMOD_RALT `elem` km) -> return True
-		Nothing        -> return False
-		_              -> checkEvent
+		Nothing			-> return False
+		_				-> checkEvent
 
 
 sdlStart fs title (Size w h) p = do
@@ -110,21 +70,25 @@ sdlStart fs title (Size w h) p = do
 -- ゲームの状態
 data GameState =
 	GameState {
-		pl :: Player
+		pl :: Player,
+		fld :: Field
 	}
 
 -- 開始状態
 initState :: GameState
 initState =
 	GameState {
-		pl = newPlayer
+		pl = newPlayer,
+		fld = getField stage
 		}
+	where
+		stage = 0
 
 
 -- 毎フレームの処理
 onProcess :: KeyProc -> GameState -> GameState
 onProcess kp gs
-	| otherwise		= gs { pl = updatePlayer kp (pl gs) }
+	| otherwise		= gs { pl = updatePlayer kp (fld gs) (pl gs) }
 
 
 -- 描画処理
@@ -132,7 +96,7 @@ onDraw :: Surface -> ImageResource -> GameState -> IO ()
 onDraw sur imgres gs = do
 	fillRect sur Nothing backColor
 
-	renderMap sur imgres
+	renderField sur imgres
 	renderPlayer sur (pl gs) imgres
 
 	flipSurface sur
