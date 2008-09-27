@@ -32,7 +32,7 @@ backColor = 0x2891ff		-- 青
 
 main :: IO ()
 main = sdlStart [VIDEO] wndTitle wndSize $ \sur -> do
-	gs <- newIORef initState
+	gs <- newIORef =<< initState
 	imgres <- loadImageResource
 
 	et <- elapseTime 60
@@ -75,11 +75,11 @@ data GameState =
 	}
 
 -- 開始状態
-initState :: GameState
-initState =
-	GameState {
+initState = do
+	fldmap <- loadField stage
+	return GameState {
 		pl = newPlayer,
-		fld = getField stage
+		fld = fldmap
 		}
 	where
 		stage = 0
@@ -98,7 +98,7 @@ onDraw sur imgres gs = do
 
 	let scrx = getScrollPos (pl gs)
 
-	renderField sur imgres scrx
+	renderField sur imgres scrx (fld gs)
 	renderPlayer sur imgres scrx (pl gs)
 
 	flipSurface sur

@@ -9,7 +9,6 @@ HSDL
 http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
 
-
 ★操作
 	カーソルキー, ijkl
 		上下左右
@@ -22,4 +21,12 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
 	エスケープキー
 		終了
+
+
+
+★ファイル構成
+	data
+		データ
+	data/img
+		画像データ
 

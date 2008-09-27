@@ -1,7 +1,7 @@
 
 module Field (
 	Field,
-	getField,
+	loadField,
 	fieldRef,
 	isBlock,
 	renderField
@@ -18,29 +18,12 @@ type Field = [[Cell]]
 
 -- マップ
 
-fieldMap :: Field
-fieldMap = [
---	 111111111111111122222222222222223333333333333333
-	"                                                ",
-	"                  123               1223        ",
-	"        123       456      12223    4556        ",
-	"        456                45556                ",
-	"                                                ",
-	"                      ?                         ",
-	"                                                ",
-	"                                                ",
-	"                                                ",
-	"   _            ?   O?O?O                     []",
-	"  /,`                                 []      l|",
-	" /,.,`           _          []        l|      l|",
-	"/.....`    78889/,`    789  l|        l| 7889 l|",
-	"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",
-	"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-	]
+-- マップ読み込み
+loadField :: Int -> IO Field
+loadField stage = readFile fn >>= return . lines
+	where
+		fn = "data/stage" ++ (show stage) ++ ".map"
 
-
-getField :: Int -> Field
-getField stage = fieldMap
 
 chr2img '@' = ImgBlock1
 chr2img 'O' = ImgBlock2
@@ -48,7 +31,7 @@ chr2img '?' = ImgBlock4
 chr2img '_' = ImgMt02
 chr2img '/' = ImgMt11
 chr2img ',' = ImgMt12
-chr2img '`' = ImgMt13
+chr2img '\\' = ImgMt13
 chr2img '.' = ImgMt22
 chr2img '1' = ImgCloud00
 chr2img '2' = ImgCloud01
@@ -77,7 +60,7 @@ fieldRef fld x y
 	| otherwise			= ' '
 
 
-renderField sur imgres scrx = sequence_ $ concatMap lineProc $ zip [0..] fieldMap
+renderField sur imgres scrx fld = sequence_ $ concatMap lineProc $ zip [0..] fld
 	where
 		lineProc (y, ln) = map (cellProc y) $ zip [0..] ln
 		cellProc y (x, c) = do
