@@ -22,6 +22,8 @@ import Const
 wndTitle = "Nario in Haskell"
 wndSize  = sz 256 240
 
+frameRate = 60
+
 -- 背景色
 backColor = 0x2891ff		-- 青
 
@@ -35,7 +37,7 @@ main = sdlStart [VIDEO] wndTitle wndSize $ \sur -> do
 	gs <- newIORef =<< initState
 	imgres <- loadImageResource
 
-	et <- elapseTime 60
+	et <- elapseTime frameRate
 	loop et gs onProcess (onDraw sur imgres) []
 
 loop et gs op od bef = do
@@ -44,7 +46,7 @@ loop et gs op od bef = do
 		ks <- getKeyState
 		modifyIORef gs $ op $ keyProc bef ks
 		st <- readIORef gs
-		(fps,draw) <- et
+		(fps, draw) <- et
 		when draw $ od st
 		loop et gs op od ks
 
@@ -56,16 +58,16 @@ checkEvent = do
 			| ks == SDLK_ESCAPE -> return True
 			| ks == SDLK_F4 && (KMOD_LALT `elem` km ||
 								KMOD_RALT `elem` km) -> return True
-		Nothing			-> return False
-		_				-> checkEvent
-
+		Nothing	-> return False
+		_		-> checkEvent
 
 sdlStart fs title (Size w h) p = do
 	True <- sdlInit fs
 	setCaption title title
-	sur  <- setVideoMode w h 32 [HWSURFACE,DOUBLEBUF,ANYFORMAT]
+	sur <- setVideoMode w h 32 [HWSURFACE, DOUBLEBUF, ANYFORMAT]
 	p sur
 	sdlQuit
+
 
 -- ゲームの状態
 data GameState =

@@ -57,7 +57,7 @@ mapPhyKey PadU = [SDLK_UP, SDLK_i]
 mapPhyKey PadD = [SDLK_DOWN, SDLK_k]
 mapPhyKey PadL = [SDLK_LEFT, SDLK_j]
 mapPhyKey PadR = [SDLK_RIGHT, SDLK_l]
-mapPhyKey PadA = [SDLK_SPACE]
+mapPhyKey PadA = [SDLK_SPACE, SDLK_z]
 mapPhyKey PadB = [SDLK_LSHIFT, SDLK_RSHIFT]
 
 -- 時間調節

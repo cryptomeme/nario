@@ -13,7 +13,7 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 	カーソルキー, ijkl
 		上下左右
 
-	スペースキー
+	スペースキー, z
 		Aボタン
 
 	シフトキー
@@ -29,4 +29,16 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 		データ
 	data/img
 		画像データ
+
+
+
+
+
+
+★参考
+	Super Nario GC
+	http://d.hatena.ne.jp/authorNari/20080422/1208880928
+
+	1-1 マップ
+	http://www.geocities.co.jp/SiliconValley-Sunnyvale/6160/newtech/m11.htm
 

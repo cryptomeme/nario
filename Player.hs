@@ -37,8 +37,8 @@ data Player = Player {
 	}
 
 newPlayer = Player {
-	x = 1 * chrSize * one,
-	y = 1 * chrSize * one,
+	x = 3 * chrSize * one,
+	y = 13 * chrSize * one,
 	vx = 0,
 	vy = 0,
 	scrx = 0,
@@ -59,6 +59,10 @@ imgTable = [
 	[ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04],
 	[ImgNario10, ImgNario11, ImgNario12, ImgNario13, ImgNario14]
 	]
+
+
+cellCrd :: Int -> Int
+cellCrd x = x `div` (chrSize * one)
 
 
 -- 横移動
@@ -100,10 +104,6 @@ moveX kp player =
 		anmCnt = maxVx * 3
 
 
-cellCrd :: Int -> Int
-cellCrd x = x `div` (chrSize * one)
-
-
 -- ジャンプ中
 jump :: Field -> Player -> Player
 jump fld player =
@@ -142,7 +142,7 @@ checkFall kp fld player =
 		isGround y = isBlock $ fieldRef fld (cellCrd (x player)) (cellCrd y)
 		yground y = (cellCrd y) * (chrSize * one)
 
-
+-- 更新処理
 updatePlayer :: KeyProc -> Field -> Player -> Player
 updatePlayer kp fld player =
 	moveY $ moveX kp player
@@ -151,10 +151,11 @@ updatePlayer kp fld player =
 			| (stand player)	= checkFall kp fld
 			| otherwise			= jump fld
 
-
+-- スクロール位置取得
 getScrollPos :: Player -> Int
 getScrollPos player = (scrx player) `div` one
 
+-- 描画
 renderPlayer sur imgres scrx player = do
 	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
 	where
