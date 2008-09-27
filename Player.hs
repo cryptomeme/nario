@@ -1,4 +1,12 @@
-module Player where
+
+-- ãƒ—ãƒ¬ãƒ¼ãƒ¤ãƒ¼
+
+module Player (
+	Player(..),
+	newPlayer,
+	updatePlayer,
+	renderPlayer
+) where
 
 import Multimedia.SDL
 
@@ -6,41 +14,94 @@ import Util
 import SDLUtil
 import Const
 
--- ƒvƒŒ[ƒ„[
 
 data Player = Player {
 	x :: Int,
 	y :: Int,
-	lr :: Int
+	vx :: Int,
+	vy :: Int,
+	stand :: Bool,
+
+	lr :: Int,
+	pat :: Int,
+	anm :: Int
 	}
 
 newPlayer = Player {
-	x = 1 * 16 * one,
-	y = 12 * 16 * one,
-	lr = 1
+	x = 1 * chrSize * one,
+	y = 13 * chrSize * one - 1,
+	vx = 0,
+	vy = 0,
+	stand = True,
+
+	lr = 1,
+	pat = 0,
+	anm = 0
 	}
 
-updatePlayer :: Player -> KeyProc -> Player
-updatePlayer player kp =
-	player { x = x', y = y', lr = lr' }
+maxVx = one * 3
+acc = one `div` 6
+
+
+patStop = 0
+patWalk = 1
+walkPatNum = 3
+patJump = patWalk + walkPatNum
+
+imgTable = [
+	[ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04],
+	[ImgNario10, ImgNario11, ImgNario12, ImgNario13, ImgNario14]
+	]
+
+
+-- æ¨ªç§»å‹•
+moveLR :: KeyProc -> Player -> Player
+moveLR kp player =
+	player { x = x', vx = vx', lr = lr', pat = pat', anm = anm' }
 	where
-		x'
-			| isPressed (kp PadL)	= (x player) - 1 * one
-			| isPressed (kp PadR)	= (x player) + 1 * one
-			| otherwise				= x player
+		ax = (-padl + padr) * acc
+		vx'
+			| ax /= 0	= rangeadd (vx player) ax (-maxspd) maxspd
+			| otherwise	= friction (vx player) acc
+		x' = (x player) + vx'
+		padl = if isPressed (kp PadL) then 1 else 0
+		padr = if isPressed (kp PadR) then 1 else 0
+		maxspd
+			| isPressed (kp PadB)	= maxVx * 2
+			| otherwise				= maxVx
+
+		lr' =
+			case (-padl + padr) of
+				0	-> lr player
+				-1	-> 0
+				1	-> 1
+		pat'
+			| vx' == 0		= patStop
+			| otherwise		= (anm' `div` anmCnt) + patWalk
+		anm'
+			| vx' == 0		= 0
+			| otherwise		= ((anm player) + (abs vx')) `mod` (walkPatNum * anmCnt)
+		anmCnt = maxVx * 3
+
+
+-- ç¸¦ç§»å‹•
+jumpOrFall :: KeyProc -> Player -> Player
+jumpOrFall kp player =
+	player { y = y' }
+	where
 		y'
 			| isPressed (kp PadU)	= (y player) - 1 * one
 			| isPressed (kp PadD)	= (y player) + 1 * one
 			| otherwise				= y player
-		lr'
-			| isPressed (kp PadL)	= 0
-			| isPressed (kp PadR)	= 1
-			| otherwise					= lr player
 
-renderPlayer sur player imgres =
-	blitSurface (getImageSurface imgres chr) Nothing sur pos
+
+updatePlayer :: KeyProc -> Player -> Player
+updatePlayer kp =
+	jumpOrFall kp . moveLR kp
+
+
+renderPlayer sur player imgres = do
+	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
 	where
-		pos = pt ((x player) `div` one) ((y player) `div` one)
-		chr = if (lr player) == 0
-				then ImgNario00
-				else ImgNario10
+		pos = pt ((x player) `div` one) ((y player) `div` one - chrSize)
+		imgtype = imgTable !! (lr player) !! (pat player)

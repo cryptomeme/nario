@@ -8,7 +8,7 @@ import Multimedia.SDL
 -}
 
 
--- –Â‚ç‚È‚¢c
+-- é³´ã‚‰ãªã„â€¦
 playAudioData ad = do
 	case audioSpec ad of
 		Just spec -> do

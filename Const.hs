@@ -1,12 +1,14 @@
 module Const where
 
 
--- �Œ菬���_�ł̂P
-one = 256
+-- 固定小数点での１
+one = 256 :: Int
+
+-- 1キャラのサイズ
+chrSize = 16 :: Int
 
 
-
--- �摜
+-- 画像
 data ImageType =
 		ImgNario00 | ImgNario01 | ImgNario02 | ImgNario03 | ImgNario04
 	|	ImgNario10 | ImgNario11 | ImgNario12 | ImgNario13 | ImgNario14
