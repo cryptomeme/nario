@@ -74,8 +74,9 @@ moveX kp player =
 	where
 		ax = (-padl + padr) * acc
 		vx'
-			| ax /= 0	= rangeadd (vx player) ax (-maxspd) maxspd
-			| otherwise	= friction (vx player) acc
+			| ax /= 0			= rangeadd (vx player) ax (-maxspd) maxspd
+			| (stand player)	= friction (vx player) acc
+			| otherwise			= friction (vx player) (acc `div` 2)
 		x' = max xmin $ (x player) + vx'
 		scrx'
 			| vx' > 0 && (x' - (scrx player)) `div` one > 160	= (scrx player) + vx'
@@ -84,6 +85,7 @@ moveX kp player =
 		padl = if isPressed (kp PadL) then 1 else 0
 		padr = if isPressed (kp PadR) then 1 else 0
 		maxspd
+			| not $ stand player	= maxVx `div` 2
 			| isPressed (kp PadB)	= maxVx * 2
 			| otherwise				= maxVx
 		xmin = (scrx player) + chrSize `div` 2 * one
@@ -104,52 +106,70 @@ moveX kp player =
 		anmCnt = maxVx * 3
 
 
--- ジャンプ中
-jump :: Field -> Player -> Player
-jump fld player =
-	player { y = y', vy = vy', stand = stand' }
+-- 横移動チェック
+checkX :: Field -> Player -> Player
+checkX fld player
+	| dir == 0	= check (-1) $ check 1 $ player
+	| otherwise = check dir $ player
 	where
-		vytmp = min maxVy $ (vy player) + gravity
-		ytmp = (y player) + vytmp
+		dir = sgn $ vx player
+		check dx player
+			| isBlock $ fieldRef fld cx cy	= player { x = (x player) - dx * one, vx = 0 }
+			| otherwise						= player
+			where
+				cx = cellCrd (x player + dx * chrSize `div` 2 * one)
+				cy = cellCrd (y player - chrSize `div` 2 * one)
 
-		y' = if isGround ytmp then yground ytmp else ytmp
-		vy' = if isGround ytmp then 0 else vytmp
-		stand' = isGround ytmp
 
-		isGround y = isBlock $ fieldRef fld (cellCrd (x player)) (cellCrd y)
+-- 重力による落下
+fall :: Player -> Player
+fall player
+	| stand player	= player
+	| otherwise		= player { y = y', vy = vy' }
+	where
+		vy' = min maxVy $ vy player + gravity
+		y' = y player + vy'
+
+
+-- 床をチェック
+checkFloor :: Field -> Player -> Player
+checkFloor fld player
+	| stand'	= player { stand = stand', y = ystand, vy = 0 }
+	| otherwise	= player { stand = stand' }
+	where
+		stand' = isGround $ y player
+		ystand = (cellCrd $ y player) * (chrSize * one)
+
+		isGround y = isBlock $ fieldRef fld (cellCrd $ x player) (cellCrd y)
+
+
+-- 上をチェック
+checkCeil :: Field -> Player -> Player
+checkCeil fld player
+	| stand player || vy player >= 0 || not isCeil	= player
+	| otherwise = player { vy = 0 }
+	where
+		ytmp = y player - one * chrSize
+
+		isCeil = isBlock $ fieldRef fld (cellCrd $ x player) (cellCrd ytmp)
 		yground y = (cellCrd y) * (chrSize * one)
 
 
--- 通常時：地面をチェック
-checkFall :: KeyProc -> Field -> Player -> Player
-checkFall kp fld player =
-	player { stand = stand', vy = vy', pat = pat' }
-	where
-		ytmp = (y player) + one
+-- ジャンプする？
+doJump :: KeyProc -> Player -> Player
+doJump kp player
+	| stand player && kp PadA == Pushed	= player { vy = jumpVy, stand = False, pat = patJump }
+	| otherwise							= player
 
-		stand'
-			| isGround ytmp		= not dojump
-			| otherwise			= False		-- 落下開始
-		vy'
-			| not stand' && dojump	= jumpVy
-			| otherwise				= 0
-		pat'
-			| dojump	= patJump
-			| otherwise	= pat player
-
-		dojump = kp PadA == Pushed
-
-		isGround y = isBlock $ fieldRef fld (cellCrd (x player)) (cellCrd y)
-		yground y = (cellCrd y) * (chrSize * one)
 
 -- 更新処理
 updatePlayer :: KeyProc -> Field -> Player -> Player
 updatePlayer kp fld player =
-	moveY $ moveX kp player
+	moveY $ checkX fld $ moveX kp player
 	where
 		moveY
-			| (stand player)	= checkFall kp fld
-			| otherwise			= jump fld
+			| stand player	= doJump kp . checkFloor fld . fall
+			| otherwise		= checkCeil fld . checkFloor fld . fall
 
 -- スクロール位置取得
 getScrollPos :: Player -> Int
