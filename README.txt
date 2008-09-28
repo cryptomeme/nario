@@ -42,3 +42,5 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 	1-1 マップ
 	http://www.geocities.co.jp/SiliconValley-Sunnyvale/6160/newtech/m11.htm
 
+	フォント
+	http://qtchicks.hp.infoseek.co.jp/fonts-nintendo.html

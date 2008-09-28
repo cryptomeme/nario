@@ -12,6 +12,7 @@ import Player
 import Field
 import Util
 import Const
+import Font
 
 wndTitle = "delayed-stream test"
 wndWidth = 256
@@ -116,5 +117,21 @@ render gs imgres sur = do
 	renderField sur imgres scrx (fld gs)
 	renderPlayer sur imgres scrx (pl gs)
 
+	renderInfo gs imgres sur
+
 	flipSurface sur
 	return ()
+
+-- 情報描画
+renderInfo :: GameState -> ImageResource -> Scr
+renderInfo gs imgres sur = do
+	puts 3 1 "MARIO"
+	puts 3 2 "00000"
+	puts 11 2 "?*00"
+	puts 19 1 "WORLD"
+	puts 20 2 "1-1"
+	puts 26 1 "TIME"
+	puts 27 2 "255"
+	where
+		puts = fontPut sur fontsur
+		fontsur = getImageSurface imgres ImgFont

@@ -19,6 +19,7 @@ data ImageType =
 	| ImgCloud00 | ImgCloud01 | ImgCloud02 | ImgCloud10 | ImgCloud11 | ImgCloud12
 	| ImgDk00 | ImgDk01 | ImgDk10 | ImgDk11
 	| ImgGrass00 | ImgGrass01 | ImgGrass02
+	| ImgFont
 	deriving Eq
 
 
@@ -55,6 +56,7 @@ imageFn ImgDk11 = "dk11.bmp"
 imageFn ImgGrass00 = "grass00.bmp"
 imageFn ImgGrass01 = "grass01.bmp"
 imageFn ImgGrass02 = "grass02.bmp"
+imageFn ImgFont = "font.bmp"
 
 images = [
 	ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04,
@@ -63,5 +65,6 @@ images = [
 	ImgMt02, ImgMt11, ImgMt12, ImgMt13, ImgMt22,
 	ImgCloud00, ImgCloud01, ImgCloud02, ImgCloud10, ImgCloud11, ImgCloud12,
 	ImgDk00, ImgDk01, ImgDk10, ImgDk11,
-	ImgGrass00, ImgGrass01, ImgGrass02
+	ImgGrass00, ImgGrass01, ImgGrass02,
+	ImgFont
 	]
