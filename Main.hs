@@ -11,6 +11,7 @@ import Control.Concurrent (threadDelay)
 import Player
 import Field
 import Util
+import Const
 
 wndTitle = "delayed-stream test"
 wndWidth = 256
@@ -87,9 +88,10 @@ initialState = do
 -- キー入力を処理して描画コマンドを返す
 process :: [[SDLKey]] -> IO [Scr]
 process kss = do
-	imgres <- loadImageResource
+	imgres <- loadImageResource images
 	st <- initialState
-	return $ map (\scr -> scr imgres) $ loop [] st kss
+	let scrs = map (\scr -> scr imgres) $ loop [] st kss
+	return $ scrs ++ [(\sur -> do {releaseImageResource imgres})]
 	where
 		loop :: [SDLKey] -> GameState -> [[SDLKey]] -> [(ImageResource -> Scr)]
 		loop _ _ [] = []

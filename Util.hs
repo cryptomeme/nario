@@ -72,20 +72,24 @@ type ImageResource = [(ImageType, Surface)]
 
 
 -- 画像リソース読み込み
-loadImageResource :: IO ImageResource
-loadImageResource = mapM load images
+loadImageResource :: [ImageType] -> IO ImageResource
+loadImageResource = mapM load
 	where
 		load imgtype = do
 			sur <- loadBMP $ ("data/img/" ++) $ imageFn imgtype
---			colorKey <- mapRGB (surfacePixelFormat sur) $ Color r g b a
-			let colorKey = 0xff00ff
-			setColorKey sur [SRCCOLORKEY] colorKey
-			return (imgtype, sur)
-		r = 255
-		g = 0
-		b = 255
-		a = 255
+			setNuki sur
+			converted <- displayFormat sur
+			freeSurface sur
+			return (imgtype, converted)
 
+		setNuki sur = do
+			let fmt = surfacePixelFormat sur
+			if not $ null $ pfPalette fmt
+				then setColorKey sur [SRCCOLORKEY] 0 >> return ()	-- パレット０番目をぬき色に
+				else return ()
+
+releaseImageResource :: ImageResource -> IO ()
+releaseImageResource = mapM_ (\(t, sur) -> freeSurface sur)
 
 getImageSurface :: ImageResource -> ImageType -> Surface
 getImageSurface imgres t = fromJust $ lookup t imgres
