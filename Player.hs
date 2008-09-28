@@ -167,9 +167,7 @@ updatePlayer :: KeyProc -> Field -> Player -> Player
 updatePlayer kp fld player =
 	moveY $ checkX fld $ moveX kp player
 	where
-		moveY
-			| stand player	= doJump kp . checkFloor fld . fall
-			| otherwise		= checkCeil fld . checkFloor fld . fall
+		moveY = doJump kp . checkFloor fld . checkCeil fld . fall
 
 -- スクロール位置取得
 getScrollPos :: Player -> Int
