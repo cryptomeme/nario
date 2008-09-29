@@ -12,27 +12,28 @@ gravity = one `div` 2
 
 -- 画像
 data ImageType =
-	  ImgNario00 | ImgNario01 | ImgNario02 | ImgNario03 | ImgNario04
-	| ImgNario10 | ImgNario11 | ImgNario12 | ImgNario13 | ImgNario14
+	  ImgNarioLStand | ImgNarioLWalk1 | ImgNarioLWalk2 | ImgNarioLWalk3 | ImgNarioLJump
+	| ImgNarioRStand | ImgNarioRWalk1 | ImgNarioRWalk2 | ImgNarioRWalk3 | ImgNarioRJump
 	| ImgBlock1 | ImgBlock2 | ImgBlock3 | ImgBlock4 | ImgBlock5
 	| ImgMt02 | ImgMt11 | ImgMt12 | ImgMt13 | ImgMt22
 	| ImgCloud00 | ImgCloud01 | ImgCloud02 | ImgCloud10 | ImgCloud11 | ImgCloud12
 	| ImgDk00 | ImgDk01 | ImgDk10 | ImgDk11
 	| ImgGrass00 | ImgGrass01 | ImgGrass02
 	| ImgFont
+	| ImgTitle
 	deriving Eq
 
 
-imageFn ImgNario00 = "nario00.bmp"
-imageFn ImgNario01 = "nario01.bmp"
-imageFn ImgNario02 = "nario02.bmp"
-imageFn ImgNario03 = "nario03.bmp"
-imageFn ImgNario04 = "nario04.bmp"
-imageFn ImgNario10 = "nario10.bmp"
-imageFn ImgNario11 = "nario11.bmp"
-imageFn ImgNario12 = "nario12.bmp"
-imageFn ImgNario13 = "nario13.bmp"
-imageFn ImgNario14 = "nario14.bmp"
+imageFn ImgNarioLStand = "narioLStand.bmp"
+imageFn ImgNarioLWalk1 = "narioLWalk1.bmp"
+imageFn ImgNarioLWalk2 = "narioLWalk2.bmp"
+imageFn ImgNarioLWalk3 = "narioLWalk3.bmp"
+imageFn ImgNarioLJump = "narioLJump.bmp"
+imageFn ImgNarioRStand = "narioRStand.bmp"
+imageFn ImgNarioRWalk1 = "narioRWalk1.bmp"
+imageFn ImgNarioRWalk2 = "narioRWalk2.bmp"
+imageFn ImgNarioRWalk3 = "narioRWalk3.bmp"
+imageFn ImgNarioRJump = "narioRJump.bmp"
 imageFn ImgBlock1 = "block1.bmp"
 imageFn ImgBlock2 = "block2.bmp"
 imageFn ImgBlock3 = "block3.bmp"
@@ -57,14 +58,16 @@ imageFn ImgGrass00 = "grass00.bmp"
 imageFn ImgGrass01 = "grass01.bmp"
 imageFn ImgGrass02 = "grass02.bmp"
 imageFn ImgFont = "font.bmp"
+imageFn ImgTitle = "title.bmp"
 
 images = [
-	ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04,
-	ImgNario10, ImgNario11, ImgNario12, ImgNario13, ImgNario14,
+	ImgNarioLStand, ImgNarioLWalk1, ImgNarioLWalk2, ImgNarioLWalk3, ImgNarioLJump,
+	ImgNarioRStand, ImgNarioRWalk1, ImgNarioRWalk2, ImgNarioRWalk3, ImgNarioRJump,
 	ImgBlock1, ImgBlock2, ImgBlock3, ImgBlock4, ImgBlock5,
 	ImgMt02, ImgMt11, ImgMt12, ImgMt13, ImgMt22,
 	ImgCloud00, ImgCloud01, ImgCloud02, ImgCloud10, ImgCloud11, ImgCloud12,
 	ImgDk00, ImgDk01, ImgDk10, ImgDk11,
 	ImgGrass00, ImgGrass01, ImgGrass02,
-	ImgFont
+	ImgFont,
+	ImgTitle
 	]

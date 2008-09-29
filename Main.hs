@@ -14,9 +14,9 @@ import Util
 import Const
 import Font
 
-wndTitle = "delayed-stream test"
+wndTitle = "NARIO in Haskell"
 wndWidth = 256
-wndHeight = 240
+wndHeight = 224
 wndBpp = 32
 
 frameRate = 60
@@ -126,12 +126,23 @@ render gs imgres sur = do
 renderInfo :: GameState -> ImageResource -> Scr
 renderInfo gs imgres sur = do
 	puts 3 1 "MARIO"
-	puts 3 2 "00000"
+	puts 3 2 "000000"
 	puts 11 2 "?*00"
-	puts 19 1 "WORLD"
-	puts 20 2 "1-1"
-	puts 26 1 "TIME"
-	puts 27 2 "255"
+	puts 18 1 "WORLD"
+	puts 19 2 "1-1"
+	puts 25 1 "TIME"
+	puts 26 2 "255"
+	where
+		puts = fontPut sur fontsur
+		fontsur = getImageSurface imgres ImgFont
+
+-- タイトル画面
+renderTitle gs imgres sur = do
+	blitSurface (getImageSurface imgres ImgTitle) Nothing sur (pt (5*8) (3*8))
+	puts 13 14 "@1985 NINTENDO"
+	puts 9 17 "> 1 PLAYER GAME"
+	puts 9 19 "  2 PLAYER GAME"
+	puts 12 22 "TOP- 000000"
 	where
 		puts = fontPut sur fontsur
 		fontsur = getImageSurface imgres ImgFont

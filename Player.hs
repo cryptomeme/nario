@@ -56,8 +56,8 @@ walkPatNum = 3
 patJump = patWalk + walkPatNum
 
 imgTable = [
-	[ImgNario00, ImgNario01, ImgNario02, ImgNario03, ImgNario04],
-	[ImgNario10, ImgNario11, ImgNario12, ImgNario13, ImgNario14]
+	[ImgNarioLStand, ImgNarioLWalk1, ImgNarioLWalk2, ImgNarioLWalk3, ImgNarioLJump],
+	[ImgNarioRStand, ImgNarioRWalk1, ImgNarioRWalk2, ImgNarioRWalk3, ImgNarioRJump]
 	]
 
 
@@ -75,8 +75,8 @@ moveX kp player =
 		ax = (-padl + padr) * acc
 		vx'
 			| ax /= 0			= rangeadd (vx player) ax (-maxspd) maxspd
-			| (stand player)	= friction (vx player) acc
-			| otherwise			= friction (vx player) (acc `div` 2)
+			| stand player		= friction (vx player) acc
+			| otherwise			= vx player
 		x' = max xmin $ (x player) + vx'
 		scrx'
 			| vx' > 0 && (x' - (scrx player)) `div` one > 160	= (scrx player) + vx'
@@ -177,5 +177,5 @@ getScrollPos player = (scrx player) `div` one
 renderPlayer sur imgres scrx player = do
 	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
 	where
-		pos = pt ((x player) `div` one - chrSize `div` 2 - scrx) ((y player) `div` one - chrSize)
+		pos = pt ((x player) `div` one - chrSize `div` 2 - scrx) ((y player) `div` one - chrSize - 8)
 		imgtype = imgTable !! (lr player) !! (pat player)

@@ -70,7 +70,7 @@ renderField sur imgres scrx fld =
 		lineProc (y, ln) = map (cellProc y) $ zip [0..] $ window ln
 		cellProc _ (_, ' ') = return ()
 		cellProc y (x, c) = putchr x y c >> return ()
-		putchr x y c = blitSurface (getImageSurface imgres $ chr2img c) Nothing sur $ pt (x*chrSize - rx) (y*chrSize)
+		putchr x y c = blitSurface (getImageSurface imgres $ chr2img c) Nothing sur $ pt (x*chrSize - rx) (y*chrSize - 8)
 
 		-- 表示される部分だけ取り出す
 		window = take w . drop qx
