@@ -146,10 +146,12 @@ checkFloor fld player
 	| stand'	= player { stand = stand', y = ystand, vy = 0 }
 	| otherwise	= player { stand = stand' }
 	where
-		stand' = isGround $ y player
+		stand'
+			| vy player >= 0	= isGround (-6) || isGround 5
+			| otherwise			= stand player
 		ystand = (cellCrd $ y player) * (chrSize * one)
 
-		isGround y = isBlock $ fieldRef fld (cellCrd $ x player) (cellCrd y)
+		isGround ofsx = isBlock $ fieldRef fld (cellCrd $ x player + ofsx * one) (cellCrd (y player))
 
 -- 上をチェック
 checkCeil :: Field -> Player -> (Player, [Event])

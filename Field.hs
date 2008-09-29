@@ -7,6 +7,7 @@
 
 module Field (
 	Field,
+	Cell,
 	loadField,
 	fieldRef,
 	fieldSet,
