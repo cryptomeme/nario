@@ -22,7 +22,7 @@ wndBpp = 32
 frameRate = 60
 
 -- 背景色
-backColor = 0x2891ff
+backColor = 0x5080FF
 
 -- 描画コマンド
 type Scr = Surface -> IO ()

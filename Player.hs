@@ -17,11 +17,13 @@ import Const
 import Field
 
 
-maxVx = one * 3
-maxVy = one * 8
+walkVx = one * 3 `div` 2
+runVx = one * 3
+maxVy = one * 6
 acc = one `div` 6
-jumpVy = -17 * gravity
-
+jumpVy = -13 * gravity
+scrollMinX = 5 * chrSize
+scrollMaxX = 8 * chrSize
 
 data Player = Player {
 	x :: Int,
@@ -54,10 +56,11 @@ patStop = 0
 patWalk = 1
 walkPatNum = 3
 patJump = patWalk + walkPatNum
+patSlip = patJump + 1
 
 imgTable = [
-	[ImgNarioLStand, ImgNarioLWalk1, ImgNarioLWalk2, ImgNarioLWalk3, ImgNarioLJump],
-	[ImgNarioRStand, ImgNarioRWalk1, ImgNarioRWalk2, ImgNarioRWalk3, ImgNarioRJump]
+	[ImgNarioLStand, ImgNarioLWalk1, ImgNarioLWalk2, ImgNarioLWalk3, ImgNarioLJump, ImgNarioLSlip],
+	[ImgNarioRStand, ImgNarioRWalk1, ImgNarioRWalk2, ImgNarioRWalk3, ImgNarioRJump, ImgNarioRSlip]
 	]
 
 
@@ -79,15 +82,17 @@ moveX kp player =
 			| otherwise			= vx player
 		x' = max xmin $ (x player) + vx'
 		scrx'
-			| vx' > 0 && (x' - (scrx player)) `div` one > 160	= (scrx player) + vx'
-			| otherwise											= (scrx player)
+			| vx' > 0 && (x' - (scrx player)) `div` one > scrollPos	= (scrx player) + vx'
+			| otherwise												= (scrx player)
+
+		scrollPos = (max vx' 0) * (scrollMaxX - scrollMinX) `div` runVx + scrollMinX
 
 		padl = if isPressed (kp PadL) then 1 else 0
 		padr = if isPressed (kp PadR) then 1 else 0
 		maxspd
-			| not $ stand player	= maxVx `div` 2
-			| isPressed (kp PadB)	= maxVx * 2
-			| otherwise				= maxVx
+			| not $ stand player	= walkVx `div` 2
+			| isPressed (kp PadB)	= walkVx * 2
+			| otherwise				= walkVx
 		xmin = (scrx player) + chrSize `div` 2 * one
 
 		player' = player { x = x', vx = vx', scrx = scrx' }
@@ -98,12 +103,14 @@ moveX kp player =
 				-1	-> 0
 				1	-> 1
 		pat'
-			| vx' == 0		= patStop
-			| otherwise		= (anm' `div` anmCnt) + patWalk
+			| vx' == 0				= patStop
+			| vx' > 0 && lr' == 0	= patSlip
+			| vx' < 0 && lr' == 1	= patSlip
+			| otherwise				= (anm' `div` anmCnt) + patWalk
 		anm'
 			| vx' == 0		= 0
 			| otherwise		= ((anm player) + (abs vx')) `mod` (walkPatNum * anmCnt)
-		anmCnt = maxVx * 3
+		anmCnt = walkVx * 3
 
 
 -- 横移動チェック
@@ -122,12 +129,15 @@ checkX fld player
 
 
 -- 重力による落下
-fall :: Player -> Player
-fall player
+fall :: KeyProc -> Player -> Player
+fall kp player
 	| stand player	= player
 	| otherwise		= player { y = y', vy = vy' }
 	where
-		vy' = min maxVy $ vy player + gravity
+		ay
+			| vy player < 0 && isPressed (kp PadA)	= gravity2
+			| otherwise								= gravity
+		vy' = min maxVy $ vy player + ay
 		y' = y player + vy'
 
 
@@ -167,7 +177,7 @@ updatePlayer :: KeyProc -> Field -> Player -> Player
 updatePlayer kp fld player =
 	moveY $ checkX fld $ moveX kp player
 	where
-		moveY = doJump kp . checkFloor fld . checkCeil fld . fall
+		moveY = doJump kp . checkFloor fld . checkCeil fld . fall kp
 
 -- スクロール位置取得
 getScrollPos :: Player -> Int
@@ -177,5 +187,5 @@ getScrollPos player = (scrx player) `div` one
 renderPlayer sur imgres scrx player = do
 	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
 	where
-		pos = pt ((x player) `div` one - chrSize `div` 2 - scrx) ((y player) `div` one - chrSize - 8)
+		pos = pt ((x player) `div` one - chrSize `div` 2 - scrx) ((y player) `div` one - chrSize+1 - 8)
 		imgtype = imgTable !! (lr player) !! (pat player)

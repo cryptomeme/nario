@@ -47,9 +47,8 @@ chr2img '[' = ImgDk00
 chr2img ']' = ImgDk01
 chr2img 'l' = ImgDk10
 chr2img '|' = ImgDk11
-
-chr2img '!' = ImgDk11
-chr2img 'o' = ImgDk11
+chr2img 'o' = ImgPole0
+chr2img '!' = ImgPole1
 
 
 isBlock :: Cell -> Bool
