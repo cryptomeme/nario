@@ -10,6 +10,10 @@ import Const
 
 -- ユーティリティ関数
 
+-- |Replace i-th element of list to v.
+replace :: [a] -> Int -> a -> [a]
+replace ls i v = take i ls ++ [v] ++ drop  (i + 1) ls
+
 -- 符号を返す
 sgn x
 	| x > 0		= 1
@@ -93,3 +97,8 @@ releaseImageResource = mapM_ (\(t, sur) -> freeSurface sur)
 
 getImageSurface :: ImageResource -> ImageType -> Surface
 getImageSurface imgres t = fromJust $ lookup t imgres
+
+
+-- 固定座標系からセル座標系に
+cellCrd :: Int -> Int
+cellCrd x = x `div` (chrSize * one)

@@ -19,7 +19,7 @@ data ImageType =
 	| ImgMt02 | ImgMt11 | ImgMt12 | ImgMt13 | ImgMt22
 	| ImgCloud00 | ImgCloud01 | ImgCloud02 | ImgCloud10 | ImgCloud11 | ImgCloud12
 	| ImgDk00 | ImgDk01 | ImgDk10 | ImgDk11
-	| ImgGrass00 | ImgGrass01 | ImgGrass02
+	| ImgGrass0 | ImgGrass1 | ImgGrass2
 	| ImgPole0 | ImgPole1
 	| ImgFont
 	| ImgTitle
@@ -58,9 +58,9 @@ imageFn ImgDk00 = "dk00.bmp"
 imageFn ImgDk01 = "dk01.bmp"
 imageFn ImgDk10 = "dk10.bmp"
 imageFn ImgDk11 = "dk11.bmp"
-imageFn ImgGrass00 = "grass00.bmp"
-imageFn ImgGrass01 = "grass01.bmp"
-imageFn ImgGrass02 = "grass02.bmp"
+imageFn ImgGrass0 = "grass0.bmp"
+imageFn ImgGrass1 = "grass1.bmp"
+imageFn ImgGrass2 = "grass2.bmp"
 imageFn ImgPole0 = "pole0.bmp"
 imageFn ImgPole1 = "pole1.bmp"
 imageFn ImgFont = "font.bmp"
@@ -73,7 +73,7 @@ images = [
 	ImgMt02, ImgMt11, ImgMt12, ImgMt13, ImgMt22,
 	ImgCloud00, ImgCloud01, ImgCloud02, ImgCloud10, ImgCloud11, ImgCloud12,
 	ImgDk00, ImgDk01, ImgDk10, ImgDk11,
-	ImgGrass00, ImgGrass01, ImgGrass02,
+	ImgGrass0, ImgGrass1, ImgGrass2,
 	ImgPole0, ImgPole1,
 	ImgFont,
 	ImgTitle

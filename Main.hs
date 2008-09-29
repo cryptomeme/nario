@@ -2,7 +2,7 @@
 
 module Main where
 
-import Multimedia.SDL
+import Multimedia.SDL hiding (Event)
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Control.Concurrent (threadDelay)
 
@@ -13,6 +13,8 @@ import Field
 import Util
 import Const
 import Font
+import Event
+import Actor
 
 wndTitle = "NARIO in Haskell"
 wndWidth = 256
@@ -70,10 +72,12 @@ checkSDLEvent = do
 
 ----
 
+
 -- 状態
 data GameState = GameState {
 	pl :: Player,
-	fld :: Field
+	fld :: Field,
+	actors :: [Actor]
 	}
 
 -- 開始状態
@@ -81,10 +85,12 @@ initialState = do
 	fldmap <- loadField stage
 	return GameState {
 		pl = newPlayer,
-		fld = fldmap
+		fld = fldmap,
+		actors = []
 		}
 	where
 		stage = 0
+
 
 -- キー入力を処理して描画コマンドを返す
 process :: [[SDLKey]] -> IO [Scr]
@@ -98,24 +104,45 @@ process kss = do
 		loop _ _ [] = []
 		loop bef gs (ks:kss) = scr' : loop ks gs' kss
 			where
-				(scr', gs') = update kp gs
+				(scr', gs') = updateProc kp gs
 				kp = keyProc bef ks
 
 -- 更新
-update :: KeyProc -> GameState -> (ImageResource -> Scr, GameState)
-update kp gs = (render gs', gs')
+updateProc :: KeyProc -> GameState -> (ImageResource -> Scr, GameState)
+updateProc kp gs = (renderProc gs', gs')
 	where
-		gs' = gs { pl = updatePlayer kp (fld gs) (pl gs) }
+		(pl', ev) = updatePlayer kp (fld gs) (pl gs)
+		actors_updates = map updateActor (actors gs)
+		actors' = map fst actors_updates
+		ev' = concatMap snd actors_updates
+
+		gstmp = gs { pl = pl', actors = actors' }
+		gs' = procEvent gstmp (ev ++ ev')
+
+-- イベントを処理
+procEvent :: GameState -> [Event] -> GameState
+procEvent gs ev = foldl f gs ev
+	where
+		f gs (EvHitBlock imgtype cx cy) = gs { fld = fld', actors = actors' }
+			where
+				fld' = fieldSet (fld gs) cx cy '*'
+				actors' = (newAnimBlock cx cy) : actors gs
+		f gs (EvSetField cx cy c) = gs { fld = fld' }
+			where
+				fld' = fieldSet (fld gs) cx cy c
+
 
 -- 描画
-render :: GameState -> ImageResource -> Scr
-render gs imgres sur = do
+renderProc :: GameState -> ImageResource -> Scr
+renderProc gs imgres sur = do
 	fillRect sur Nothing backColor
 
 	let scrx = getScrollPos (pl gs)
 
 	renderField sur imgres scrx (fld gs)
 	renderPlayer sur imgres scrx (pl gs)
+
+	mapM_ (\act -> renderActor act imgres scrx sur) (actors gs)
 
 	renderInfo gs imgres sur
 

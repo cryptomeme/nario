@@ -9,12 +9,13 @@ module Player (
 	getScrollPos
 ) where
 
-import Multimedia.SDL
+import Multimedia.SDL hiding (Event)
 
 import Util
 import SDLUtil
 import Const
 import Field
+import Event
 
 
 walkVx = one * 3 `div` 2
@@ -62,10 +63,6 @@ imgTable = [
 	[ImgNarioLStand, ImgNarioLWalk1, ImgNarioLWalk2, ImgNarioLWalk3, ImgNarioLJump, ImgNarioLSlip],
 	[ImgNarioRStand, ImgNarioRWalk1, ImgNarioRWalk2, ImgNarioRWalk3, ImgNarioRJump, ImgNarioRSlip]
 	]
-
-
-cellCrd :: Int -> Int
-cellCrd x = x `div` (chrSize * one)
 
 
 -- 横移動
@@ -124,8 +121,10 @@ checkX fld player
 			| isBlock $ fieldRef fld cx cy	= player { x = (x player) - dx * one, vx = 0 }
 			| otherwise						= player
 			where
-				cx = cellCrd (x player + dx * chrSize `div` 2 * one)
+				cx = cellCrd (x player + ofsx dx)
 				cy = cellCrd (y player - chrSize `div` 2 * one)
+				ofsx (-1) = -6 * one
+				ofsx   1  =  5 * one
 
 
 -- 重力による落下
@@ -152,16 +151,17 @@ checkFloor fld player
 
 		isGround y = isBlock $ fieldRef fld (cellCrd $ x player) (cellCrd y)
 
-
 -- 上をチェック
-checkCeil :: Field -> Player -> Player
+checkCeil :: Field -> Player -> (Player, [Event])
 checkCeil fld player
-	| stand player || vy player >= 0 || not isCeil	= player
-	| otherwise = player { vy = 0 }
+	| stand player || vy player >= 0 || not isCeil	= (player, [])
+	| otherwise = (player { vy = 0 }, [EvHitBlock ImgBlock2 cx cy])
 	where
 		ytmp = y player - one * chrSize
 
-		isCeil = isBlock $ fieldRef fld (cellCrd $ x player) (cellCrd ytmp)
+		cx = cellCrd $ x player
+		cy = cellCrd ytmp
+		isCeil = isBlock $ fieldRef fld cx cy
 		yground y = (cellCrd y) * (chrSize * one)
 
 
@@ -173,11 +173,11 @@ doJump kp player
 
 
 -- 更新処理
-updatePlayer :: KeyProc -> Field -> Player -> Player
+updatePlayer :: KeyProc -> Field -> Player -> (Player, [Event])
 updatePlayer kp fld player =
 	moveY $ checkX fld $ moveX kp player
 	where
-		moveY = doJump kp . checkFloor fld . checkCeil fld . fall kp
+		moveY = checkCeil fld . doJump kp . checkFloor fld . fall kp
 
 -- スクロール位置取得
 getScrollPos :: Player -> Int
