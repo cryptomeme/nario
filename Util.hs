@@ -1,12 +1,5 @@
 module Util where
 
-import System.Time (getClockTime, diffClockTimes, noTimeDiff, tdMin, tdSec, tdPicosec)
-import Control.Concurrent (threadDelay)
-import Data.Maybe (fromJust)
-import Multimedia.SDL
-
-import Const
-
 
 -- ユーティリティ関数
 
@@ -33,72 +26,3 @@ friction x d
 	| x > d		= x - d
 	| x < -d	= x + d
 	| otherwise	= 0
-
-
-
--- キーボード処理
-
-data PadBtn =
-	PadU | PadD | PadL | PadR | PadA | PadB
-	deriving (Eq, Show, Enum)
-
-data KeyState =
-	Pushed | Pushing | Released | Releasing
-	deriving (Eq, Show)
-
-isPressed Pushed  = True
-isPressed Pushing = True
-isPressed _       = False
-
-type KeyProc = PadBtn -> KeyState
-
-keyProc bef cur gk
-	| not bp && not cp = Releasing
-	| not bp && cp     = Pushed
-	| bp     && not cp = Released
-	| bp     && cp     = Pushing
-	where
-		bp = any (flip elem bef) phykeys
-		cp = any (flip elem cur) phykeys
-		phykeys = mapPhyKey gk
-
-mapPhyKey PadU = [SDLK_UP, SDLK_i]
-mapPhyKey PadD = [SDLK_DOWN, SDLK_k]
-mapPhyKey PadL = [SDLK_LEFT, SDLK_j]
-mapPhyKey PadR = [SDLK_RIGHT, SDLK_l]
-mapPhyKey PadA = [SDLK_SPACE, SDLK_z]
-mapPhyKey PadB = [SDLK_LSHIFT, SDLK_RSHIFT]
-
-
-
--- 画像リソース
-type ImageResource = [(ImageType, Surface)]
-
-
--- 画像リソース読み込み
-loadImageResource :: [ImageType] -> IO ImageResource
-loadImageResource = mapM load
-	where
-		load imgtype = do
-			sur <- loadBMP $ ("data/img/" ++) $ imageFn imgtype
-			setNuki sur
-			converted <- displayFormat sur
-			freeSurface sur
-			return (imgtype, converted)
-
-		setNuki sur = do
-			let fmt = surfacePixelFormat sur
-			if not $ null $ pfPalette fmt
-				then setColorKey sur [SRCCOLORKEY] 0 >> return ()	-- パレット０番目をぬき色に
-				else return ()
-
-releaseImageResource :: ImageResource -> IO ()
-releaseImageResource = mapM_ (\(t, sur) -> freeSurface sur)
-
-getImageSurface :: ImageResource -> ImageType -> Surface
-getImageSurface imgres t = fromJust $ lookup t imgres
-
-
--- 固定座標系からセル座標系に
-cellCrd :: Int -> Int
-cellCrd x = x `div` (chrSize * one)

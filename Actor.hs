@@ -4,7 +4,9 @@ module Actor where
 import Multimedia.SDL hiding (Event)
 
 import Const
+import Images
 import Util
+import AppUtil
 import Event
 
 

@@ -12,8 +12,10 @@ module Player (
 import Multimedia.SDL hiding (Event)
 
 import Util
+import AppUtil
 import SDLUtil
 import Const
+import Images
 import Field
 import Event
 

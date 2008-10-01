@@ -11,7 +11,9 @@ import Control.Concurrent (threadDelay)
 import Player
 import Field
 import Util
+import AppUtil
 import Const
+import Images
 import Font
 import Event
 import Actor
@@ -95,7 +97,7 @@ initialState = do
 -- キー入力を処理して描画コマンドを返す
 process :: [[SDLKey]] -> IO [Scr]
 process kss = do
-	imgres <- loadImageResource images
+	imgres <- loadImageResource imageTypes
 	st <- initialState
 	let scrs = map (\scr -> scr imgres) $ loop [] st kss
 	return $ scrs ++ [(\sur -> do {releaseImageResource imgres})]

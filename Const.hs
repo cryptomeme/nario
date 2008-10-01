@@ -11,6 +11,7 @@ chrSize = 16 :: Int
 gravity = one `div` 2
 gravity2 = one `div` 4
 
+{-
 -- 画像
 data ImageType =
 	  ImgNarioLStand | ImgNarioLWalk1 | ImgNarioLWalk2 | ImgNarioLWalk3 | ImgNarioLJump | ImgNarioLSlip
@@ -78,3 +79,4 @@ images = [
 	ImgFont,
 	ImgTitle
 	]
+-}

@@ -19,3 +19,7 @@ clean:
 
 doc:
 	haddock -h -o man -l C:\\ghc\\haddock-2.0.0.0 -B c:\\ghc\\ghc-6.8.2 *.hs
+
+
+imgs:
+	runghc -itool tool/listup-imgs.hs data/img > Images.hs

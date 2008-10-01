@@ -18,7 +18,9 @@ module Field (
 import Multimedia.SDL
 
 import Const
+import Images
 import Util
+import AppUtil
 
 type Cell = Char
 type Field = [[Cell]]
