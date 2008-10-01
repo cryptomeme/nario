@@ -1,3 +1,4 @@
+-- 画像ファイルを列挙して、ソースを生成
 
 import System (getArgs)
 import FileUtils (fileEntries, basename)
@@ -6,14 +7,12 @@ import Maybe (isJust)
 import Char (toUpper)
 import Data.List (intercalate)
 
--- �摜�t�@�C���̗�
+-- 画像ファイルの列挙
 listupImgFiles path = fileEntries path >>= return . filter bmpFile
 	where
 		bmpFile = isJust . regex "\\.bmp$"
 
-regex :: String -> String -> Maybe [String]
-regex rex str = matchRegex (mkRegex rex) str
-
+-- 全置換
 gsub rexstr f str = loop str
 	where
 		loop str =
@@ -22,15 +21,16 @@ gsub rexstr f str = loop str
 				Nothing		-> str
 		rex = mkRegex rexstr
 
+-- 拡張子を除いたファイル名
 basefn fn =
 	case regex "^(.*)\\..*$" $ basename fn of
 		Just [base]	-> base
 		Nothing		-> fn
 
--- �擪��啶����
+-- 先頭を大文字に
 camelize (x:xs) = toUpper x : xs
 
-
+-- エントリ
 main = do
 	args <- getArgs
 	let imgpath = head args

@@ -19,8 +19,8 @@ import Event
 import Actor
 
 wndTitle = "NARIO in Haskell"
-wndWidth = 256
-wndHeight = 224
+screenWidth = 256
+screenHeight = 224
 wndBpp = 32
 
 frameRate = 60
@@ -36,7 +36,7 @@ main :: IO ()
 main = do
 	sdlInit [VIDEO]
 	setCaption wndTitle wndTitle
-	sur <- setVideoMode wndWidth wndHeight wndBpp [HWSURFACE, DOUBLEBUF, ANYFORMAT]
+	sur <- setVideoMode screenWidth screenHeight wndBpp [HWSURFACE, DOUBLEBUF, ANYFORMAT]
 	do
 		strm <- delayedStream (1000000 `div` frameRate) fetch
 		scrs <- process $ map snd $ takeWhile notQuit strm
@@ -76,53 +76,77 @@ checkSDLEvent = do
 
 
 -- 状態
-data GameState = GameState {
-	pl :: Player,
-	fld :: Field,
-	actors :: [Actor]
+data GameGame =
+	GameGame {
+		pl :: Player,
+		fld :: Field,
+		actors :: [Actor],
+		time :: Int
 	}
-
--- 開始状態
-initialState = do
-	fldmap <- loadField stage
-	return GameState {
-		pl = newPlayer,
-		fld = fldmap,
-		actors = []
-		}
-	where
-		stage = 0
 
 
 -- キー入力を処理して描画コマンドを返す
 process :: [[SDLKey]] -> IO [Scr]
 process kss = do
 	imgres <- loadImageResource imageTypes
-	st <- initialState
-	let scrs = map (\scr -> scr imgres) $ loop [] st kss
+	fldmap <- loadField 0
+
+	let tmpscrs = doTitle fldmap kss
+
+	let scrs = map (\scr sur -> scr imgres sur >> flipSurface sur >> return ()) $ tmpscrs
 	return $ scrs ++ [(\sur -> do {releaseImageResource imgres})]
+
+
+-- タイトル
+doTitle :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
+doTitle fldmap kss = loop kss
 	where
-		loop :: [SDLKey] -> GameState -> [[SDLKey]] -> [(ImageResource -> Scr)]
-		loop _ _ [] = []
-		loop bef gs (ks:kss) = scr' : loop ks gs' kss
+		loop :: [[SDLKey]] -> [ImageResource -> Scr]
+		loop (ks:kss) = res : left ks kss
+
+		res imgres sur = do
+			fillRect sur Nothing backColor
+			renderTitle imgres sur
+
+		left ks kss
+			| SDLK_SPACE `elem` ks	= doGame fldmap kss
+			| otherwise				= loop kss
+
+-- ゲーム
+doGame :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
+doGame fldmap kss = loop (head kss) initialState kss
+	where
+		loop :: [SDLKey] -> GameGame -> [[SDLKey]] -> [ImageResource -> Scr]
+		loop bef gs (ks:kss) = scr' : left ks kss
 			where
-				(scr', gs') = updateProc kp gs
-				kp = keyProc bef ks
+				(scr', gs') = updateProc (keyProc bef ks) gs
+				isPlayerDead = getPlayerYPos (pl gs') >= screenHeight + chrSize * 2
+				timeOver = time gs' <= 0
 
--- 更新
-updateProc :: KeyProc -> GameState -> (ImageResource -> Scr, GameState)
-updateProc kp gs = (renderProc gs', gs')
-	where
-		(pl', ev) = updatePlayer kp (fld gs) (pl gs)
-		actors_updates = map updateActor (actors gs)
-		actors' = map fst actors_updates
-		ev' = concatMap snd actors_updates
+				left ks kss
+					| isPlayerDead || timeOver	= doGameOver fldmap kss
+					| otherwise					= loop ks gs' kss
 
-		gstmp = gs { pl = pl', actors = actors' }
-		gs' = procEvent gstmp (ev ++ ev')
+		-- 更新
+		updateProc :: KeyProc -> GameGame -> (ImageResource -> Scr, GameGame)
+		updateProc kp gs = (renderProc gs', gs')
+			where
+				time' = max 0 (time gs - one `div` 25)
+				(pl', ev) = updatePlayer kp (fld gs) (pl gs)
+				actors_updates = map updateActor (actors gs)
+				actors' = map fst actors_updates
+				ev' = concatMap snd actors_updates
+
+				gstmp = gs { pl = pl', actors = actors', time = time' }
+				gs' = procEvent gstmp (ev ++ ev')
+
+		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * one }
+
+doGameOver fldmap kss = doTitle fldmap kss
+
 
 -- イベントを処理
-procEvent :: GameState -> [Event] -> GameState
+procEvent :: GameGame -> [Event] -> GameGame
 procEvent gs ev = foldl f gs ev
 	where
 		f gs (EvHitBlock imgtype cx cy) = gs { fld = fld', actors = actors' }
@@ -135,7 +159,7 @@ procEvent gs ev = foldl f gs ev
 
 
 -- 描画
-renderProc :: GameState -> ImageResource -> Scr
+renderProc :: GameGame -> ImageResource -> Scr
 renderProc gs imgres sur = do
 	fillRect sur Nothing backColor
 
@@ -147,30 +171,32 @@ renderProc gs imgres sur = do
 	mapM_ (\act -> renderActor act imgres scrx sur) (actors gs)
 
 	renderInfo gs imgres sur
-
-	flipSurface sur
 	return ()
 
+tailN n = reverse . take n . reverse
+
+deciWide w c n = tailN w $ replicate w c ++ show n
+
 -- 情報描画
-renderInfo :: GameState -> ImageResource -> Scr
+renderInfo :: GameGame -> ImageResource -> Scr
 renderInfo gs imgres sur = do
 	puts 3 1 "MARIO"
-	puts 3 2 "000000"
-	puts 11 2 "?*00"
+	puts 3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
+	puts 11 2 ("?*" ++ deciWide 2 '0' (getPlayerMedal (pl gs)))
 	puts 18 1 "WORLD"
 	puts 19 2 "1-1"
 	puts 25 1 "TIME"
-	puts 26 2 "255"
+	puts 26 2 $ deciWide 3 ' ' ((time gs + one-1) `div` one)
 	where
 		puts = fontPut sur fontsur
 		fontsur = getImageSurface imgres ImgFont
 
 -- タイトル画面
-renderTitle gs imgres sur = do
+renderTitle imgres sur = do
 	blitSurface (getImageSurface imgres ImgTitle) Nothing sur (pt (5*8) (3*8))
 	puts 13 14 "@1985 NINTENDO"
 	puts 9 17 "> 1 PLAYER GAME"
-	puts 9 19 "  2 PLAYER GAME"
+--	puts 9 19 "  2 PLAYER GAME"
 	puts 12 22 "TOP- 000000"
 	where
 		puts = fontPut sur fontsur

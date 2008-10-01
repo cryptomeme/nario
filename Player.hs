@@ -6,14 +6,16 @@ module Player (
 	newPlayer,
 	updatePlayer,
 	renderPlayer,
-	getScrollPos
+	getScrollPos,
+	getPlayerYPos,
+	getPlayerMedal,
+	getPlayerScore
 ) where
 
 import Multimedia.SDL hiding (Event)
 
 import Util
 import AppUtil
-import SDLUtil
 import Const
 import Images
 import Field
@@ -36,6 +38,9 @@ data Player = Player {
 	scrx :: Int,
 	stand :: Bool,
 
+	medal :: Int,
+	score :: Int,
+
 	lr :: Int,
 	pat :: Int,
 	anm :: Int
@@ -48,6 +53,9 @@ newPlayer = Player {
 	vy = 0,
 	scrx = 0,
 	stand = False,
+
+	medal = 0,
+	score = 0,
 
 	lr = 1,
 	pat = 0,
@@ -159,7 +167,7 @@ checkFloor fld player
 checkCeil :: Field -> Player -> (Player, [Event])
 checkCeil fld player
 	| stand player || vy player >= 0 || not isCeil	= (player, [])
-	| otherwise = (player { vy = 0 }, [EvHitBlock ImgBlock2 cx cy])
+	| otherwise = (player { vy = 0, score = (score player) + 10 }, [EvHitBlock ImgBlock2 cx cy])
 	where
 		ytmp = y player - one * chrSize
 
@@ -186,6 +194,18 @@ updatePlayer kp fld player =
 -- スクロール位置取得
 getScrollPos :: Player -> Int
 getScrollPos player = (scrx player) `div` one
+
+-- Ｙ座標取得
+getPlayerYPos :: Player -> Int
+getPlayerYPos = (`div` one) . y
+
+-- メダル枚数取得
+getPlayerMedal :: Player -> Int
+getPlayerMedal = medal
+
+-- スコア取得
+getPlayerScore :: Player -> Int
+getPlayerScore = score
 
 -- 描画
 renderPlayer sur imgres scrx player = do
