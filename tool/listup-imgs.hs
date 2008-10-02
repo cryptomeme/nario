@@ -12,6 +12,9 @@ listupImgFiles path = fileEntries path >>= return . filter bmpFile
 	where
 		bmpFile = isJust . regex "\\.bmp$"
 
+-- 正規表現
+regex rexstr str = matchRegex (mkRegex rexstr) str
+
 -- 全置換
 gsub rexstr f str = loop str
 	where

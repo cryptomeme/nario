@@ -166,11 +166,10 @@ renderProc gs imgres sur = do
 	let scrx = getScrollPos (pl gs)
 
 	renderField sur imgres scrx (fld gs)
+	renderInfo gs imgres sur
 	renderPlayer sur imgres scrx (pl gs)
 
 	mapM_ (\act -> renderActor act imgres scrx sur) (actors gs)
-
-	renderInfo gs imgres sur
 	return ()
 
 tailN n = reverse . take n . reverse
