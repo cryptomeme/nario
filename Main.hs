@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fglasgow-exts #-}
+
 -- Nario
 
 module Main where
@@ -73,6 +75,13 @@ checkSDLEvent = do
 		_		-> checkSDLEvent
 
 ----
+data ObjWrapper = forall a. Actor a => ObjWrapper a	-- 存在型aの動く範囲を型クラスDuckに制限
+
+updateActors :: [ObjWrapper] -> [(ObjWrapper, [Event])]
+updateActors = map (\(ObjWrapper x) -> let (x', ev') = update x in (ObjWrapper x', ev'))
+
+renderActors :: ImageResource -> Int -> Surface -> [ObjWrapper] -> IO ()
+renderActors imgres ofsx sur = mapM_ (\(ObjWrapper x) -> render x imgres ofsx sur)
 
 
 -- 状態
@@ -80,7 +89,7 @@ data GameGame =
 	GameGame {
 		pl :: Player,
 		fld :: Field,
-		actors :: [Actor],
+		actors :: [ObjWrapper],
 		time :: Int
 	}
 
@@ -133,7 +142,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 			where
 				time' = max 0 (time gs - one `div` 25)
 				(pl', ev) = updatePlayer kp (fld gs) (pl gs)
-				actors_updates = map updateActor (actors gs)
+				actors_updates = updateActors (actors gs)
 				actors' = map fst actors_updates
 				ev' = concatMap snd actors_updates
 
@@ -152,7 +161,7 @@ procEvent gs ev = foldl f gs ev
 		f gs (EvHitBlock imgtype cx cy) = gs { fld = fld', actors = actors' }
 			where
 				fld' = fieldSet (fld gs) cx cy '*'
-				actors' = (newAnimBlock cx cy) : actors gs
+				actors' = (ObjWrapper $ newAnimBlock cx cy) : actors gs
 		f gs (EvSetField cx cy c) = gs { fld = fld' }
 			where
 				fld' = fieldSet (fld gs) cx cy c
@@ -169,7 +178,7 @@ renderProc gs imgres sur = do
 	renderInfo gs imgres sur
 	renderPlayer sur imgres scrx (pl gs)
 
-	mapM_ (\act -> renderActor act imgres scrx sur) (actors gs)
+	renderActors imgres scrx sur (actors gs)
 	return ()
 
 tailN n = reverse . take n . reverse

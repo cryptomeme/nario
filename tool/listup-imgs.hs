@@ -42,7 +42,7 @@ main = do
 	let symbols = map (("Img" ++) . gsub "([a-zA-Z]+)" (camelize . head) . basefn) imgFiles
 
 	putStrLn "module Images (ImageType(..), imageTypes, imageFn) where"
-	putStrLn "import Maybe"
+	putStrLn "import Maybe (fromJust)"
 
 	putStrLn $ "data ImageType = " ++ intercalate " | " symbols ++ "\tderiving (Eq)"
 	putStrLn $ "imageTypes = [" ++ intercalate ", " symbols ++ "]"
