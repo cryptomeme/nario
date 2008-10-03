@@ -12,7 +12,9 @@ module Field (
 	fieldRef,
 	fieldSet,
 	isBlock,
-	renderField
+	renderField,
+	chr2img,
+	hardBlock
 ) where
 
 import Multimedia.SDL
@@ -39,6 +41,7 @@ chr2img '@' = ImgBlock1
 chr2img 'O' = ImgBlock2
 chr2img 'X' = ImgBlock3
 chr2img '?' = ImgBlock4
+chr2img '#' = ImgBlock5
 chr2img '_' = ImgMt02
 chr2img '/' = ImgMt11
 chr2img ',' = ImgMt12
@@ -63,7 +66,10 @@ chr2img '!' = ImgPole1
 
 
 isBlock :: Cell -> Bool
-isBlock c = c `elem` "@OX?[]l|*"
+isBlock = (`elem` "@OX?#[]l|*")
+
+hardBlock :: Cell -> Bool
+hardBlock = (`elem` "#X@*")
 
 inField :: Field -> Int -> Int -> Bool
 inField fld x y = 0 <= y && y < length fld && 0 <= x && x < length (fld !! y)

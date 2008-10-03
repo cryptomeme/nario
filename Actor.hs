@@ -9,64 +9,64 @@ import Images
 import Util
 import AppUtil
 import Event
+import Field
 
 class Actor a where
 	update :: a -> (a, [Event])
 	render :: a -> ImageResource -> Int -> Surface -> IO ()
 	bDead :: a -> Bool
 
--- ============================================================================
--- ActNull
---	死亡
-
-data AnimNull = AnimNull
-
-instance Actor AnimNull where
-	update self = (self, [])
-	render self imgres scrx sur = return ()
-	bDead self = True
-
 
 -- ============================================================================
 -- AnimBlock
 --	ブロックを叩いたときのバウンド演出
 
-data AnimBlock = AnimBlock { startcy :: Int, x :: Int, y :: Int, vy :: Int }
+data AnimBlock = AnimBlock {
+	startcy :: Int,
+	x :: Int,
+	y :: Int,
+	vy :: Int,
+	chr :: Cell
+	}
 
 instance Actor AnimBlock where
-	update self = result'
-		where
-			result'
-				| not bEnd	= (self { vy = vy', y = y' }, [])
-				| otherwise	= (self, [EvSetField (cellCrd $ x self) (startcy self) '@'])
+	update self
+		| not (bDead self)	= (self', ev')
+		| otherwise			= (self, [])
 
+		where
 			vy' = vy self + gravity
 			y' = y self + vy'
-			bEnd = y' >= startcy self * chrSize * one
+			self' = self { vy = vy', y = y' }
+			ev' = if (bDead self')
+				then [EvSetField (cellCrd $ x self) (startcy self) $ chr self]
+				else []
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres ImgBlock2) Nothing sur (pt ((x self) `div` one - scrx) ((y self) `div` one - 8))
+		blitSurface (getImageSurface imgres $ chr2img $ chr self) Nothing sur (pt ((x self) `div` one - scrx) ((y self) `div` one - 8))
 		return ()
 
-	bDead self = False
+	bDead self = vy self > 0 && y self >= startcy self * chrSize * one
 
-
-newAnimBlock cx cy = AnimBlock { startcy = cy, x = cx * chrSize * one, y = cy * chrSize * one, vy = -3 * one }
-
+newAnimBlock :: Int -> Int -> Cell -> AnimBlock
+newAnimBlock cx cy c =
+	AnimBlock { startcy = cy, x = cx * chrSize * one, y = cy * chrSize * one, vy = -3 * one, chr = cc }
+	where
+		cc = case c of
+			'?'	-> '#'
+			x	-> x
 
 
 -- ============================================================================
 
-{-
-updateActor :: Actor -> (Actor, [Event])
-updateActor ActNull				= updateNull
-updateActor (ActAnimBlock a)	= updateAnimBlock a
+----
+data ObjWrapper = forall a. Actor a => ObjWrapper a	-- ݌^a͈̓͂잃NXDuckɐ
 
-renderActor :: Actor -> ImageResource -> Int -> Surface -> IO ()
-renderActor ActNull				= renderNull
-renderActor (ActAnimBlock a)	= renderAnimBlock a
+updateActors :: [ObjWrapper] -> [(ObjWrapper, [Event])]
+updateActors = map (\(ObjWrapper x) -> let (x', ev') = update x in (ObjWrapper x', ev'))
 
-bDieActor :: Actor -> Bool
-bDieActor ActNull				= bDieNull
-bDieActor (ActAnimBlock a)		= bDieAnimBlock a
--}
+filterActors :: [ObjWrapper] -> [ObjWrapper]
+filterActors = filter (\(ObjWrapper x) -> not $ bDead x)
+
+renderActors :: ImageResource -> Int -> Surface -> [ObjWrapper] -> IO ()
+renderActors imgres ofsx sur = mapM_ (\(ObjWrapper x) -> render x imgres ofsx sur)

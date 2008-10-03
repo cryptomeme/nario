@@ -44,3 +44,9 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
 	ƒtƒHƒ“ƒg
 	http://qtchicks.hp.infoseek.co.jp/fonts-nintendo.html
+
+	unsafeInterleaveIO
+	http://d.hatena.ne.jp/tanakh/20040803#p1
+
+	‘¶İŒ^
+	http://d.hatena.ne.jp/syd_syd/20080805#p2

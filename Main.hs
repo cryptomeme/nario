@@ -74,15 +74,6 @@ checkSDLEvent = do
 		Nothing	-> return False
 		_		-> checkSDLEvent
 
-----
-data ObjWrapper = forall a. Actor a => ObjWrapper a	-- 存在型aの動く範囲を型クラスDuckに制限
-
-updateActors :: [ObjWrapper] -> [(ObjWrapper, [Event])]
-updateActors = map (\(ObjWrapper x) -> let (x', ev') = update x in (ObjWrapper x', ev'))
-
-renderActors :: ImageResource -> Int -> Surface -> [ObjWrapper] -> IO ()
-renderActors imgres ofsx sur = mapM_ (\(ObjWrapper x) -> render x imgres ofsx sur)
-
 
 -- 状態
 data GameGame =
@@ -143,7 +134,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 				time' = max 0 (time gs - one `div` 25)
 				(pl', ev) = updatePlayer kp (fld gs) (pl gs)
 				actors_updates = updateActors (actors gs)
-				actors' = map fst actors_updates
+				actors' = filterActors $ map fst actors_updates
 				ev' = concatMap snd actors_updates
 
 				gstmp = gs { pl = pl', actors = actors', time = time' }
@@ -158,10 +149,13 @@ doGameOver fldmap kss = doTitle fldmap kss
 procEvent :: GameGame -> [Event] -> GameGame
 procEvent gs ev = foldl f gs ev
 	where
-		f gs (EvHitBlock imgtype cx cy) = gs { fld = fld', actors = actors' }
+		f gs (EvHitBlock imgtype cx cy)
+			| hardBlock c	= gs
+			| otherwise		= gs { fld = fld', actors = actors' }
 			where
+				c = fieldRef (fld gs) cx cy
+				actors' = actors gs ++ [ObjWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy]
 				fld' = fieldSet (fld gs) cx cy '*'
-				actors' = (ObjWrapper $ newAnimBlock cx cy) : actors gs
 		f gs (EvSetField cx cy c) = gs { fld = fld' }
 			where
 				fld' = fieldSet (fld gs) cx cy c
@@ -188,7 +182,7 @@ deciWide w c n = tailN w $ replicate w c ++ show n
 -- 情報描画
 renderInfo :: GameGame -> ImageResource -> Scr
 renderInfo gs imgres sur = do
-	puts 3 1 "MARIO"
+	puts 3 1 "NARIO"
 	puts 3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
 	puts 11 2 ("?*" ++ deciWide 2 '0' (getPlayerMedal (pl gs)))
 	puts 18 1 "WORLD"
