@@ -2,51 +2,51 @@
 Super Nario GC
 http://d.hatena.ne.jp/authorNari/20080422/1208880928
 
-‚ğ Haskell/HSDL ‚Åì‚é
+ã‚’ Haskell/HSDL ã§ä½œã‚‹
 
 
 HSDL
 http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
 
-š‘€ì
-	ƒJ[ƒ\ƒ‹ƒL[, ijkl
-		ã‰º¶‰E
+â˜…æ“ä½œ
+	ã‚«ãƒ¼ã‚½ãƒ«ã‚­ãƒ¼, ijkl
+		ä¸Šä¸‹å·¦å³
 
-	ƒXƒy[ƒXƒL[, z
-		Aƒ{ƒ^ƒ“
+	ã‚¹ãƒšãƒ¼ã‚¹ã‚­ãƒ¼, z
+		Aãƒœã‚¿ãƒ³
 
-	ƒVƒtƒgƒL[
-		Bƒ{ƒ^ƒ“
+	ã‚·ãƒ•ãƒˆã‚­ãƒ¼
+		Bãƒœã‚¿ãƒ³
 
-	ƒGƒXƒP[ƒvƒL[
-		I—¹
+	ã‚¨ã‚¹ã‚±ãƒ¼ãƒ—ã‚­ãƒ¼
+		çµ‚äº†
 
 
 
-šƒtƒ@ƒCƒ‹\¬
+â˜…ãƒ•ã‚¡ã‚¤ãƒ«æ§‹æˆ
 	data
-		ƒf[ƒ^
+		ãƒ‡ãƒ¼ã‚¿
 	data/img
-		‰æ‘œƒf[ƒ^
+		ç”»åƒãƒ‡ãƒ¼ã‚¿
 
 
 
 
 
 
-šQl
+â˜…å‚è€ƒ
 	Super Nario GC
 	http://d.hatena.ne.jp/authorNari/20080422/1208880928
 
-	1-1 ƒ}ƒbƒv
+	1-1 ãƒãƒƒãƒ—
 	http://www.geocities.co.jp/SiliconValley-Sunnyvale/6160/newtech/m11.htm
 
-	ƒtƒHƒ“ƒg
+	ãƒ•ã‚©ãƒ³ãƒˆ
 	http://qtchicks.hp.infoseek.co.jp/fonts-nintendo.html
 
 	unsafeInterleaveIO
 	http://d.hatena.ne.jp/tanakh/20040803#p1
 
-	‘¶İŒ^
+	å­˜åœ¨å‹
 	http://d.hatena.ne.jp/syd_syd/20080805#p2

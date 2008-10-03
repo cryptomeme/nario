@@ -1,7 +1,8 @@
 
 PROJECT = nario
 
-SRCS = $(wildcard *.hs)
+SRCS = $(wildcard *.hs) $(wildcard Actor/*.hs)
+OBJS = $(subst .hs,.o,$(SRCS)) $(subst .hs,.hi,$(SRCS))
 
 all:	$(PROJECT).exe
 
@@ -12,8 +13,7 @@ $(PROJECT).exe:	$(SRCS)
 	ghc -o $(PROJECT) --make -O $(SRCS)
 
 clean:
-	rm -f *.o
-	rm -f *.hi
+	rm -f $(OBJS)
 	rm -f *.manifest
 	rm -f *.exe
 

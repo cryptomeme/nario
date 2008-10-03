@@ -19,6 +19,8 @@ import Images
 import Font
 import Event
 import Actor
+import Actor.AnimBlock
+import Actor.Kuribo
 
 wndTitle = "NARIO in Haskell"
 screenWidth = 256
@@ -112,6 +114,23 @@ doTitle fldmap kss = loop kss
 			| SDLK_SPACE `elem` ks	= doGame fldmap kss
 			| otherwise				= loop kss
 
+
+
+-- マップのスクロールに応じたイベント
+scrollEvent :: Field -> Int -> (Field, [Event])
+scrollEvent fld cx
+	| cx < length (head fld)	= foldl proc (fld, []) $ zip [0..] cols
+	| otherwise					= (fld, [])
+	where
+		proc (f, e) (cy, c) =
+			case event cy c of
+				Just ev	-> (fieldSet f cx cy ' ', ev : e)
+				Nothing	-> (f, e)
+		cols = map (!! cx) fld
+		event cy c
+			| c `elem` "k"	= Just $ EvAppearEnemy cx cy c
+			| otherwise		= Nothing
+
 -- ゲーム
 doGame :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
 doGame fldmap kss = loop (head kss) initialState kss
@@ -132,13 +151,15 @@ doGame fldmap kss = loop (head kss) initialState kss
 		updateProc kp gs = (renderProc gs', gs')
 			where
 				time' = max 0 (time gs - one `div` 25)
-				(pl', ev) = updatePlayer kp (fld gs) (pl gs)
+				(fld', screv') = scrollEvent (fld gs) $ getScrollPos (pl gs) `div` chrSize + 18
+
+				(pl', plev) = updatePlayer kp fld' (pl gs)
 				actors_updates = updateActors (actors gs)
 				actors' = filterActors $ map fst actors_updates
 				ev' = concatMap snd actors_updates
 
-				gstmp = gs { pl = pl', actors = actors', time = time' }
-				gs' = procEvent gstmp (ev ++ ev')
+				gstmp = gs { pl = pl', fld = fld', actors = actors', time = time' }
+				gs' = procEvent gstmp (plev ++ ev' ++ screv')
 
 		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * one }
 
@@ -147,18 +168,20 @@ doGameOver fldmap kss = doTitle fldmap kss
 
 -- イベントを処理
 procEvent :: GameGame -> [Event] -> GameGame
-procEvent gs ev = foldl f gs ev
+procEvent gs ev = foldl proc gs ev
 	where
-		f gs (EvHitBlock imgtype cx cy)
+		proc gs (EvHitBlock imgtype cx cy)
 			| hardBlock c	= gs
 			| otherwise		= gs { fld = fld', actors = actors' }
 			where
 				c = fieldRef (fld gs) cx cy
 				actors' = actors gs ++ [ObjWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy]
 				fld' = fieldSet (fld gs) cx cy '*'
-		f gs (EvSetField cx cy c) = gs { fld = fld' }
+		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
+		proc gs (EvAppearEnemy cx cy c) = gs { actors = actors gs ++ [ene] }
 			where
-				fld' = fieldSet (fld gs) cx cy c
+				ene = case c of
+					'k'	-> ObjWrapper $ newKuribo cx cy
 
 
 -- 描画
@@ -189,6 +212,7 @@ renderInfo gs imgres sur = do
 	puts 19 2 "1-1"
 	puts 25 1 "TIME"
 	puts 26 2 $ deciWide 3 ' ' ((time gs + one-1) `div` one)
+
 	where
 		puts = fontPut sur fontsur
 		fontsur = getImageSurface imgres ImgFont
