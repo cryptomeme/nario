@@ -4,9 +4,9 @@ http://d.hatena.ne.jp/authorNari/20080422/1208880928
 
 を Haskell/HSDL で作る
 
-
 HSDL
 http://fxp.hp.infoseek.co.jp/haskell/HSDL/
+
 
 
 ★操作
@@ -32,6 +32,22 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
 
 
+★ビルド
+・必要なもの
+	Haskell コンパイラ
+
+	SDL
+	http://www.libsdl.org/
+
+	HSDL
+	http://fxp.hp.infoseek.co.jp/haskell/HSDL/
+
+　○ビルド
+	make
+
+　○実行
+	できた実行ファイルを入力、または
+	make run
 
 
 

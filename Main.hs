@@ -21,6 +21,7 @@ import Actor.AnimBlock
 import Actor.Kuribo
 import Actor.Nokonoko
 import Actor.Kinoko
+import Actor.Flower
 
 -- 背景色
 backColor = 0x5080FF
@@ -139,8 +140,10 @@ hitcheck player actors = foldl proc (player, []) actors
 			where
 				nothingHappened = (pl, ac ++ [ActorWrapper a])
 				plrc = getPlayerHitRect player
-				pl' = pl
-				ac' = ac
+				(pl', a') = onHit pl a
+				ac' = case a' of
+					Just a''	-> ac ++ [ActorWrapper a'']
+					Nothing		-> ac
 
 
 -- ゲーム
@@ -185,16 +188,18 @@ doGameOver fldmap kss = doTitle fldmap kss
 procEvent :: GameGame -> [Event] -> GameGame
 procEvent gs ev = foldl proc gs ev
 	where
-		proc gs (EvHitBlock imgtype cx cy)
-			| hardBlock c	= gs
-			| otherwise		= gs { fld = fld', actors = actors' }
+		proc gs (EvHitBlock imgtype cx cy bSuper)
+			| hardBlock c			= gs
+			| bSuper && breakable c	= gs { fld = fieldSet (fld gs) cx cy ' ' }
+			| otherwise				= gs { fld = fld', actors = actors' }
 			where
 				c = fieldRef (fld gs) cx cy
 				items
-					| c == 'K'	= [ActorWrapper $ newKinoko cx cy]
+					| c == 'K'	= if not bSuper then [ActorWrapper $ newKinoko cx cy] else [ActorWrapper $ newFlower cx cy]
 					| otherwise	= []
 				actors' = actors gs ++ [ActorWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy] ++ items
 				fld' = fieldSet (fld gs) cx cy '*'
+				breakable c = c == 'O'
 		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
 		proc gs (EvAppearEnemy cx cy c) = gs { actors = actors gs ++ [ene] }
 			where
@@ -212,9 +217,9 @@ renderProc gs imgres sur = do
 
 	renderField sur imgres scrx (fld gs)
 	renderInfo gs imgres sur
+	renderActors imgres scrx sur (actors gs)
 	renderPlayer sur imgres scrx (pl gs)
 
-	renderActors imgres scrx sur (actors gs)
 	return ()
 
 tailN n = reverse . take n . reverse

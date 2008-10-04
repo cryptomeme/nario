@@ -27,7 +27,7 @@ instance Actor Nokonoko where
 		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt ((x self) `div` one - scrx) ((y self) `div` one - 8))
 		return ()
 		where
-			imgtype = ImgNoko0
+			imgtype = [ImgNoko0, ImgNoko1] !! (cnt self `mod` 16 `div` 8)
 
 newNokonoko :: Int -> Int -> Nokonoko
 newNokonoko cx cy =

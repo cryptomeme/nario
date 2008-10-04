@@ -12,6 +12,7 @@ import Util (sgn)
 import AppUtil (getImageSurface, cellCrd, Rect(..))
 import Images
 import Field
+import Player (PlayerType(..), getPlayerType, setPlayerType)
 
 maxVy = one * 6
 
@@ -50,6 +51,13 @@ instance Actor Kinoko where
 		where
 			xx = x self `div` one
 			yy = y self `div` one
+
+	onHit pl self = (setPlayerType nt pl, Nothing)
+		where
+			nt = case typ of
+				SmallNario	-> SuperNario
+				otherwise	-> typ
+			typ = getPlayerType pl
 
 
 newKinoko :: Int -> Int -> Kinoko

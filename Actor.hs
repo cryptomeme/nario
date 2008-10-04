@@ -13,6 +13,7 @@ import Multimedia.SDL (Surface)
 import Event (Event)
 import AppUtil (ImageResource, Rect)
 import Field (Field)
+import Player (Player)
 
 
 class Actor a where
@@ -24,6 +25,9 @@ class Actor a where
 
 	getHitRect :: a -> Maybe Rect
 	getHitRect _ = Nothing
+
+	onHit :: Player -> a -> (Player, Maybe a)
+	onHit pl ac = (pl, Nothing)
 
 -- ============================================================================
 
