@@ -75,7 +75,7 @@ data GameGame =
 	GameGame {
 		pl :: Player,
 		fld :: Field,
-		actors :: [ObjWrapper],
+		actors :: [ActorWrapper],
 		time :: Int
 	}
 
@@ -124,6 +124,25 @@ scrollEvent fld cx
 			| c `elem` "kn"	= Just $ EvAppearEnemy cx cy c
 			| otherwise		= Nothing
 
+
+
+-- 当たり判定
+hitcheck :: Player -> [ActorWrapper] -> (Player, [ActorWrapper])
+hitcheck player actors = foldl proc (player, []) actors
+	where
+		proc (pl, ac) (ActorWrapper a) = case getHitRect a of
+			Nothing	-> nothingHappened
+			Just rc	->
+				if not $ ishit plrc rc
+					then nothingHappened
+					else (pl', ac')
+			where
+				nothingHappened = (pl, ac ++ [ActorWrapper a])
+				plrc = getPlayerHitRect player
+				pl' = pl
+				ac' = ac
+
+
 -- ゲーム
 doGame :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
 doGame fldmap kss = loop (head kss) initialState kss
@@ -151,11 +170,14 @@ doGame fldmap kss = loop (head kss) initialState kss
 				actors' = filterActors $ map fst actors_updates
 				ev' = concatMap snd actors_updates
 
-				gstmp = gs { pl = pl', fld = fld', actors = actors', time = time' }
+				(pl'', actors'') = hitcheck pl' actors'
+
+				gstmp = gs { pl = pl'', fld = fld', actors = actors'', time = time' }
 				gs' = procEvent gstmp (plev ++ ev' ++ screv')
 
 		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * one }
 
+-- ゲームオーバー
 doGameOver fldmap kss = doTitle fldmap kss
 
 
@@ -169,16 +191,16 @@ procEvent gs ev = foldl proc gs ev
 			where
 				c = fieldRef (fld gs) cx cy
 				items
-					| c == 'K'	= [ObjWrapper $ newKinoko cx cy]
+					| c == 'K'	= [ActorWrapper $ newKinoko cx cy]
 					| otherwise	= []
-				actors' = actors gs ++ [ObjWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy] ++ items
+				actors' = actors gs ++ [ActorWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy] ++ items
 				fld' = fieldSet (fld gs) cx cy '*'
 		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
 		proc gs (EvAppearEnemy cx cy c) = gs { actors = actors gs ++ [ene] }
 			where
 				ene = case c of
-					'k'	-> ObjWrapper $ newKuribo cx cy
-					'n'	-> ObjWrapper $ newNokonoko cx cy
+					'k'	-> ActorWrapper $ newKuribo cx cy
+					'n'	-> ActorWrapper $ newNokonoko cx cy
 
 
 -- 描画

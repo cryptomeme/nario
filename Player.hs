@@ -7,14 +7,15 @@ module Player (
 	renderPlayer,
 	getScrollPos,
 	getPlayerYPos,
+	getPlayerHitRect,
 	getPlayerMedal,
 	getPlayerScore
 ) where
 
-import Multimedia.SDL hiding (Event)
+import Multimedia.SDL (blitSurface, pt)
 
 import Util
-import AppUtil
+import AppUtil (KeyProc, isPressed, PadBtn(..), cellCrd, KeyState(..), getImageSurface, Rect(..))
 import Const
 import Images
 import Field
@@ -198,6 +199,13 @@ getScrollPos player = (scrx player) `div` one
 -- Ｙ座標取得
 getPlayerYPos :: Player -> Int
 getPlayerYPos = (`div` one) . y
+
+-- 当たり判定用矩形
+getPlayerHitRect :: Player -> Rect
+getPlayerHitRect self = Rect (xx - 6) (yy - 16) (xx + 6) yy
+	where
+		xx = x self `div` one
+		yy = y self `div` one
 
 -- メダル枚数取得
 getPlayerMedal :: Player -> Int

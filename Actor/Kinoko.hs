@@ -4,12 +4,12 @@ module Actor.Kinoko (
 	newKinoko
 ) where
 
-import Multimedia.SDL hiding (Event)
+import Multimedia.SDL (blitSurface, pt)
 
 import Actor (Actor(..))
 import Const
 import Util (sgn)
-import AppUtil
+import AppUtil (getImageSurface, cellCrd, Rect(..))
 import Images
 import Field
 
@@ -45,6 +45,11 @@ instance Actor Kinoko where
 			imgtype = ImgKinoko
 
 	bDead self = y self `div` one >= screenHeight + chrSize * 3
+
+	getHitRect self = Just $ Rect (xx - 8) (yy - 16) (xx + 8) yy
+		where
+			xx = x self `div` one
+			yy = y self `div` one
 
 
 newKinoko :: Int -> Int -> Kinoko

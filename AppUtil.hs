@@ -1,6 +1,6 @@
 module AppUtil where
 
-import Multimedia.SDL
+import Multimedia.SDL (Surface, SDLKey(..), loadBMP, freeSurface, surfacePixelFormat, displayFormat, pfPalette, setColorKey, SurfaceFlag(..))
 import Data.Maybe (fromJust)
 
 import Const
@@ -72,3 +72,13 @@ getImageSurface imgres = fromJust . flip lookup imgres
 -- 固定座標系からセル座標系に
 cellCrd :: Int -> Int
 cellCrd x = x `div` (chrSize * one)
+
+
+
+-- ========
+data Rect = Rect Int Int Int Int
+
+
+ishit :: Rect -> Rect -> Bool
+ishit (Rect l1 t1 r1 b1) (Rect l2 t2 r2 b2) =
+	l1 < r2 && t1 < b2 && l2 < r1 && t2 < b1
