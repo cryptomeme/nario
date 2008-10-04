@@ -63,10 +63,11 @@ chr2img '|' = ImgDk11
 chr2img 'o' = ImgPole0
 chr2img '!' = ImgPole1
 
+chr2img 'K' = ImgBlock4
 
 
 isBlock :: Cell -> Bool
-isBlock = (`elem` "@OX?#[]l|*")
+isBlock = (`elem` "@OX?#[]l|*K")
 
 hardBlock :: Cell -> Bool
 hardBlock = (`elem` "#X@*")

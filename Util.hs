@@ -1,6 +1,5 @@
 module Util where
 
-
 -- ユーティリティ関数
 
 -- |Replace i-th element of list to v.

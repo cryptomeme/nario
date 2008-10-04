@@ -1,7 +1,7 @@
 -- クリボー
 
-module Actor.Kuribo (
-	newKuribo
+module Actor.Nokonoko (
+	newNokonoko
 ) where
 
 import Multimedia.SDL hiding (Event)
@@ -12,7 +12,7 @@ import AppUtil
 import Images
 
 
-data Kuribo = Kuribo {
+data Nokonoko = Nokonoko {
 	x :: Int,
 	y :: Int,
 	vx :: Int,
@@ -20,15 +20,15 @@ data Kuribo = Kuribo {
 	cnt :: Int
 	}
 
-instance Actor Kuribo where
+instance Actor Nokonoko where
 	update fld self = (self { x = x self + vx self, cnt = cnt self + 1 }, [])
 
 	render self imgres scrx sur = do
 		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt ((x self) `div` one - scrx) ((y self) `div` one - 8))
 		return ()
 		where
-			imgtype = [ImgKuri0, ImgKuri1] !! (cnt self `mod` 16 `div` 8)
+			imgtype = ImgNoko0
 
-newKuribo :: Int -> Int -> Kuribo
-newKuribo cx cy =
-	Kuribo { x = cx * chrSize * one, y = cy * chrSize * one, vx = -one `div` 2, vy = 0, cnt = 0 }
+newNokonoko :: Int -> Int -> Nokonoko
+newNokonoko cx cy =
+	Nokonoko { x = cx * chrSize * one, y = cy * chrSize * one, vx = -one `div` 2, vy = 0, cnt = 0 }

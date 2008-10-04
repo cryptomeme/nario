@@ -1,4 +1,3 @@
-
 -- プレーヤー
 
 module Player (
@@ -29,6 +28,7 @@ acc = one `div` 6
 jumpVy = -13 * gravity
 scrollMinX = 5 * chrSize
 scrollMaxX = 8 * chrSize
+gravity2 = one `div` 4		-- Aを長押ししたときの重力
 
 data Player = Player {
 	x :: Int,

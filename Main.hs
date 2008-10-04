@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fglasgow-exts #-}
-
 -- Nario
 
 module Main where
@@ -21,13 +19,8 @@ import Event
 import Actor
 import Actor.AnimBlock
 import Actor.Kuribo
-
-wndTitle = "NARIO in Haskell"
-screenWidth = 256
-screenHeight = 224
-wndBpp = 32
-
-frameRate = 60
+import Actor.Nokonoko
+import Actor.Kinoko
 
 -- 背景色
 backColor = 0x5080FF
@@ -128,7 +121,7 @@ scrollEvent fld cx
 				Nothing	-> (f, e)
 		cols = map (!! cx) fld
 		event cy c
-			| c `elem` "k"	= Just $ EvAppearEnemy cx cy c
+			| c `elem` "kn"	= Just $ EvAppearEnemy cx cy c
 			| otherwise		= Nothing
 
 -- ゲーム
@@ -154,7 +147,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 				(fld', screv') = scrollEvent (fld gs) $ getScrollPos (pl gs) `div` chrSize + 18
 
 				(pl', plev) = updatePlayer kp fld' (pl gs)
-				actors_updates = updateActors (actors gs)
+				actors_updates = updateActors (fld gs) (actors gs)
 				actors' = filterActors $ map fst actors_updates
 				ev' = concatMap snd actors_updates
 
@@ -175,13 +168,17 @@ procEvent gs ev = foldl proc gs ev
 			| otherwise		= gs { fld = fld', actors = actors' }
 			where
 				c = fieldRef (fld gs) cx cy
-				actors' = actors gs ++ [ObjWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy]
+				items
+					| c == 'K'	= [ObjWrapper $ newKinoko cx cy]
+					| otherwise	= []
+				actors' = actors gs ++ [ObjWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy] ++ items
 				fld' = fieldSet (fld gs) cx cy '*'
 		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
 		proc gs (EvAppearEnemy cx cy c) = gs { actors = actors gs ++ [ene] }
 			where
 				ene = case c of
 					'k'	-> ObjWrapper $ newKuribo cx cy
+					'n'	-> ObjWrapper $ newNokonoko cx cy
 
 
 -- 描画

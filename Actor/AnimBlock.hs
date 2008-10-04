@@ -6,7 +6,7 @@ module Actor.AnimBlock (
 
 import Multimedia.SDL hiding (Event)
 
-import Actor
+import Actor (Actor(..))
 import Const
 import AppUtil
 import Images
@@ -26,7 +26,7 @@ data AnimBlock = AnimBlock {
 	}
 
 instance Actor AnimBlock where
-	update self
+	update fld self
 		| not (bDead self)	= (self', ev')
 		| otherwise			= (self, [])
 
@@ -50,4 +50,5 @@ newAnimBlock cx cy c =
 	where
 		cc = case c of
 			'?'	-> '#'
+			'K'	-> '#'
 			x	-> x

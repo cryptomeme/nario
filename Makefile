@@ -23,3 +23,6 @@ doc:
 
 imgs:
 	runghc -itool tool/listup-imgs.hs data/img > Images.hs
+
+count:
+	find -name "*.hs" | xargs cat | wc

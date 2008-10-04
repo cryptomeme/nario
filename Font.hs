@@ -12,8 +12,10 @@ fontWidth = 8
 fontHeight = 8
 fontXN = 16
 
+-- 文字列表示
 fontPut sur imgsur x y str = zipWithM_ (\i c -> fontPutc sur imgsur i y c) [x..] str
 
+-- １文字表示
 fontPutc sur imgsur x y c = do
 	blitSurface imgsur (Just rc) sur pos
 	where

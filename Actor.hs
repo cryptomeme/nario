@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -fglasgow-exts #-}
 
 module Actor (
-	Actor (..),
-	ObjWrapper (..),
+	Actor(..),
+	ObjWrapper(..),
 	updateActors,
 	filterActors,
 	renderActors
@@ -12,21 +12,22 @@ import Multimedia.SDL (Surface)
 
 import Event
 import AppUtil
+import Field 
 
 
 class Actor a where
-	update :: a -> (a, [Event])
+	update :: Field -> a -> (a, [Event])
 	render :: a -> ImageResource -> Int -> Surface -> IO ()
 	bDead :: a -> Bool
-
+	bDead _ = False
 
 -- ============================================================================
 
 ----
 data ObjWrapper = forall a. Actor a => ObjWrapper a	-- 存在型aの動く範囲を型クラスに制限
 
-updateActors :: [ObjWrapper] -> [(ObjWrapper, [Event])]
-updateActors = map (\(ObjWrapper x) -> let (x', ev') = update x in (ObjWrapper x', ev'))
+updateActors :: Field -> [ObjWrapper] -> [(ObjWrapper, [Event])]
+updateActors fld = map (\(ObjWrapper x) -> let (x', ev') = update fld x in (ObjWrapper x', ev'))
 
 filterActors :: [ObjWrapper] -> [ObjWrapper]
 filterActors = filter (\(ObjWrapper x) -> not $ bDead x)
