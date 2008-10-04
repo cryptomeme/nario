@@ -26,7 +26,7 @@ class Actor a where
 	getHitRect :: a -> Maybe Rect
 	getHitRect _ = Nothing
 
-	onHit :: Player -> a -> (Player, Maybe a)
+	onHit :: Player -> a -> (Player, Maybe ActorWrapper)
 	onHit pl ac = (pl, Nothing)
 
 -- ============================================================================

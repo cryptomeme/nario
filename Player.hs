@@ -8,14 +8,18 @@ module Player (
 	renderPlayer,
 	getScrollPos,
 	getPlayerYPos,
+	getPlayerVY,
 	getPlayerHitRect,
 	getPlayerMedal,
 	getPlayerScore,
 	getPlayerType,
-	setPlayerType
+	setPlayerType,
+	setPlayerDamage,
+	stampPlayer
 ) where
 
 import Multimedia.SDL (blitSurface, pt)
+import Data.Bits ((.&.))
 
 import Util
 import AppUtil (KeyProc, isPressed, PadBtn(..), cellCrd, KeyState(..), getImageSurface, Rect(..))
@@ -33,18 +37,28 @@ jumpVy = -13 * gravity
 scrollMinX = 5 * chrSize
 scrollMaxX = 8 * chrSize
 gravity2 = one `div` 4		-- Aを長押ししたときの重力
+stampVy = -8 * gravity
+undeadFrame = frameRate * 2
 
+-- 種類
 data PlayerType = SmallNario | SuperNario | FireNario
 	deriving (Eq)
 
+-- 状態
+data PlayerState = Normal | Dead
+	deriving (Eq)
+
+-- 構造体
 data Player = Player {
 	pltype :: PlayerType,
+	plstate :: PlayerState,
 	x :: Int,
 	y :: Int,
 	vx :: Int,
 	vy :: Int,
 	scrx :: Int,
 	stand :: Bool,
+	undeadCount :: Int,
 
 	medal :: Int,
 	score :: Int,
@@ -56,12 +70,14 @@ data Player = Player {
 
 newPlayer = Player {
 	pltype = SmallNario,
+	plstate = Normal,
 	x = 3 * chrSize * one,
 	y = 13 * chrSize * one,
 	vx = 0,
 	vy = 0,
 	scrx = 0,
 	stand = False,
+	undeadCount = 0,
 
 	medal = 0,
 	score = 0,
@@ -79,6 +95,7 @@ patJump = patWalk + walkPatNum
 patSlip = patJump + 1
 patSit = patSlip + 1
 patShot = patSit + 1
+patDead = patShot + 2
 
 imgTableSmall = [
 	[ImgNarioLStand, ImgNarioLWalk1, ImgNarioLWalk2, ImgNarioLWalk3, ImgNarioLJump, ImgNarioLSlip, ImgNarioLStand],
@@ -101,7 +118,7 @@ moveX kp self =
 		then self' { lr = lr', pat = pat', anm = anm' }
 		else self'
 	where
-		ax = (-padl + padr) * acc
+		ax = if padd then 0 else (-padl + padr) * acc
 		vx'
 			| ax /= 0			= rangeadd (vx self) ax (-maxspd) maxspd
 			| stand self		= friction (vx self) acc
@@ -113,6 +130,7 @@ moveX kp self =
 
 		scrollPos = (max vx' 0) * (scrollMaxX - scrollMinX) `div` runVx + scrollMinX
 
+		padd = if isPressed (kp PadD) then True else False
 		padl = if isPressed (kp PadL) then 1 else 0
 		padr = if isPressed (kp PadR) then 1 else 0
 		maxspd
@@ -129,6 +147,7 @@ moveX kp self =
 				-1	-> 0
 				1	-> 1
 		pat'
+			| padd && pltype self /= SmallNario	= patSit
 			| vx' == 0				= patStop
 			| vx' > 0 && lr' == 0	= patSlip
 			| vx' < 0 && lr' == 1	= patSlip
@@ -157,14 +176,14 @@ checkX fld self
 
 
 -- 重力による落下
-fall :: KeyProc -> Player -> Player
-fall kp self
+fall :: Bool -> Player -> Player
+fall abtn self
 	| stand self	= self
 	| otherwise		= self { y = y', vy = vy' }
 	where
 		ay
-			| vy self < 0 && isPressed (kp PadA)	= gravity2
-			| otherwise								= gravity
+			| vy self < 0 && abtn	= gravity2
+			| otherwise				= gravity
 		vy' = min maxVy $ vy self + ay
 		y' = y self + vy'
 
@@ -210,9 +229,23 @@ doJump kp self
 -- 更新処理
 updatePlayer :: KeyProc -> Field -> Player -> (Player, [Event])
 updatePlayer kp fld self =
+	case plstate self of
+		Normal	-> updateNormal kp fld self'
+		Dead	-> updateDead kp fld self'
+	where
+		self' = decUndead self
+		decUndead pl = pl { undeadCount = max 0 $ undeadCount pl - 1 }
+
+-- 通常時
+updateNormal :: KeyProc -> Field -> Player -> (Player, [Event])
+updateNormal kp fld self =
 	moveY $ checkX fld $ moveX kp self
 	where
-		moveY = checkCeil fld . doJump kp . checkFloor fld . fall kp
+		moveY = checkCeil fld . doJump kp . checkFloor fld . fall (isPressed $ kp PadA)
+
+-- 死亡時
+updateDead :: KeyProc -> Field -> Player -> (Player, [Event])
+updateDead kp fld self = (fall False self, [])
 
 -- スクロール位置取得
 getScrollPos :: Player -> Int
@@ -221,6 +254,10 @@ getScrollPos self = (scrx self) `div` one
 -- Ｙ座標取得
 getPlayerYPos :: Player -> Int
 getPlayerYPos = (`div` one) . y
+
+-- Ｙ速度取得
+getPlayerVY :: Player -> Int
+getPlayerVY = vy
 
 -- 当たり判定用矩形
 getPlayerHitRect :: Player -> Rect
@@ -245,14 +282,29 @@ getPlayerType = pltype
 setPlayerType :: PlayerType -> Player -> Player
 setPlayerType t self = self { pltype = t }
 
+-- ダメージを与える
+setPlayerDamage :: Player -> Player
+setPlayerDamage self
+	| undeadCount self > 0			= self
+	| pltype self == SmallNario		= self { plstate = Dead, pat = patDead, vy = jumpVy, stand = False }
+	| otherwise						= self { pltype = SmallNario, undeadCount = undeadFrame }
+
+-- 敵を踏み潰した
+stampPlayer :: Player -> Player
+stampPlayer self = self { vy = stampVy }
+
 -- 描画
 renderPlayer sur imgres scrx self = do
-	blitSurface (getImageSurface imgres imgtype) Nothing sur pos
+	if undeadCount self == 0 || (undeadCount self .&. 1) /= 0
+		then blitSurface (getImageSurface imgres imgtype) Nothing sur pos >> return ()
+		else return ()
 	where
 		pos = case pltype self of
 			SmallNario	-> pt sx $ sy - chrSize + 1
 			otherwise	-> pt sx $ sy - chrSize * 2 + 1
-		imgtype = imgtbl !! lr self !! pat self
+		imgtype
+			| plstate self == Dead	= ImgNarioDead
+			| otherwise				= imgtbl !! lr self !! pat self
 		imgtbl = case pltype self of
 			SmallNario	-> imgTableSmall
 			SuperNario	-> imgTableSuper

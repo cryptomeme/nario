@@ -142,7 +142,7 @@ hitcheck player actors = foldl proc (player, []) actors
 				plrc = getPlayerHitRect player
 				(pl', a') = onHit pl a
 				ac' = case a' of
-					Just a''	-> ac ++ [ActorWrapper a'']
+					Just a''	-> ac ++ [a'']
 					Nothing		-> ac
 
 
