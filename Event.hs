@@ -1,8 +1,8 @@
 module Event where
 
-import Const
-import Images
-import Field
+import Images (ImageType)
+import Field (Cell)
+import {-# SOURCE #-} Actor (Actor(..), ActorWrapper(..))
 
 data Event =
 		-- ブロックをたたいた x y super?
@@ -11,8 +11,8 @@ data Event =
 		-- フィールドを変更
 	|	EvSetField Int Int Cell
 
-		-- 敵登場
-	|	EvAppearEnemy Int Int Cell
+		-- アクター追加
+	|	EvAddActor ActorWrapper
 
 		-- スコア加算エフェクト
-	|	EvScoreAddEfe Int Int ImageType
+	|	EvScoreAddEfe Int Int Int

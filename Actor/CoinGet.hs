@@ -1,3 +1,4 @@
+-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- コインを取ったときの演出コイン
 
 module Actor.CoinGet (
@@ -25,7 +26,7 @@ imgtbl = [ImgCoin0, ImgCoin1, ImgCoin2, ImgCoin3]
 
 instance Actor CoinGet where
 	update _ self
-		| bDead self'	= (self', [EvScoreAddEfe (sx self) (y self `div` one) Img1000])
+		| bDead self'	= (self', [EvScoreAddEfe (sx self) (y self `div` one) pointGetCoin])
 		| otherwise		= (self', [])
 		where
 			self' = self { y = y self + vy self, vy = vy self + gravity, cnt = cnt self + 1 }

@@ -1,3 +1,4 @@
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- きのこ
 
 module Actor.Kinoko (
@@ -7,16 +8,15 @@ module Actor.Kinoko (
 import Multimedia.SDL (blitSurface, pt)
 
 import Actor (Actor(..))
+import Actor.Common (updateActorBase)
 import Const
-import Util (sgn)
 import AppUtil (getImageSurface, cellCrd, Rect(..))
 import Images
 import Field
 import Player (PlayerType(..), getPlayerType, setPlayerType, addScore)
+import Event (Event(..))
 
-maxVy = one * 6
-
-pointKinoko = 1000
+ofsH = 15
 
 
 data Kinoko = Kinoko {
@@ -27,40 +27,31 @@ data Kinoko = Kinoko {
 	}
 
 instance Actor Kinoko where
-	update fld self
-		| isGround	= (self { x = x', vx = vx', y = (cellCrd y') * one * chrSize, vy = 0 }, [])
-		| otherwise	= (self { x = x', vx = vx', y = y', vy = vy' }, [])
+	update fld self = (self', [])
 		where
-			x' = x self + vx self
-			sideWall = isBlock $ fieldRef fld (cellCrd $ x' + sgn (vx self) * 6 * one) (cellCrd $ y self - chrSize * one `div` 2)
-			vx'
-				| sideWall	= -(vx self)
-				| otherwise	= vx self
-
-			vy' = min maxVy $ vy self + gravity
-			y' = y self + vy'
-			isGround = isBlock $ fieldRef fld (cellCrd $ x') (cellCrd y')
+			self' = self { x = x', y = y', vx = vx', vy = vy' }
+			(x', y', vx', vy') = updateActorBase fld (x self, y self, vx self, vy self)
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - 15 - 8))
+		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8))
 		return ()
 		where
 			imgtype = ImgKinoko
 
-	bDead self = y self `div` one >= screenHeight + chrSize * 3
+	bDead self = y self >= (screenHeight + chrSize * 3) * one || x self <= -chrSize * one
 
 	getHitRect self = Just $ Rect (xx - 8) (yy - 16) (xx + 8) yy
 		where
 			xx = x self `div` one
 			yy = y self `div` one
 
-	onHit pl self = (addScore pointKinoko $ setPlayerType nt pl, Nothing)
+	onHit pl self = (addScore pointKinoko $ setPlayerType nt pl, Nothing, ev)
 		where
 			nt = case typ of
 				SmallNario	-> SuperNario
 				otherwise	-> typ
 			typ = getPlayerType pl
-
+			ev = [EvScoreAddEfe (x self `div` one) (y self `div` one - chrSize * 2) pointKinoko]
 
 newKinoko :: Int -> Int -> Kinoko
 newKinoko cx cy =

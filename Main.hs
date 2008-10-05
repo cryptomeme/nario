@@ -33,10 +33,6 @@ backColor = 0x5080FF
 type Scr = Surface -> IO ()
 
 
-pointBreakBlock = 50
-pointGetCoin = 200
-
-
 -- エントリ
 main :: IO ()
 main = do
@@ -129,28 +125,36 @@ scrollEvent fld cx
 				Nothing	-> (f, e)
 		cols = map (!! cx) fld
 		event cy c
-			| c `elem` "kn"	= Just $ EvAppearEnemy cx cy c
+			| c `elem` "kn"	= Just $ EvAddActor $ genActor c
 			| otherwise		= Nothing
+			where
+				genActor c = case c of
+					'k'	-> ActorWrapper $ newKuribo cx cy
+					'n'	-> ActorWrapper $ newNokonoko cx cy
+
 
 
 -- 当たり判定
-hitcheck :: Player -> [ActorWrapper] -> (Player, [ActorWrapper])
-hitcheck player actors = foldl proc (player, []) actors
+hitcheck :: Player -> [ActorWrapper] -> (Player, [ActorWrapper], [Event])
+hitcheck player actors = foldl proc (player, [], []) actors
 	where
-		proc (pl, ac) (ActorWrapper a) = case getHitRect a of
+		proc (pl, ac, ev) (ActorWrapper a) = case getHitRect a of
 			Nothing	-> nothingHappened
 			Just rc	->
 				if not $ ishit plrc rc
 					then nothingHappened
-					else (pl', ac')
+					else (pl', ac', ev')
 			where
-				nothingHappened = (pl, ac ++ [ActorWrapper a])
+				nothingHappened = (pl, ac ++ [ActorWrapper a], ev)
 				plrc = getPlayerHitRect player
-				(pl', a') = onHit pl a
+				(pl', a', evtmp) = onHit pl a
 				ac' = case a' of
 					Just a''	-> ac ++ [a'']
 					Nothing		-> ac
+				ev' = ev ++ evtmp
 
+
+timeBase = 22
 
 -- ゲーム
 doGame :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
@@ -160,7 +164,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 		loop bef gs (ks:kss) = scr' : left ks kss
 			where
 				(scr', gs') = updateProc (keyProc bef ks) gs
-				isPlayerDead = getPlayerYPos (pl gs') >= screenHeight + chrSize * 2
+				isPlayerDead = getPlayerY (pl gs') >= (screenHeight + chrSize * 2) * one
 				timeOver = time gs' <= 0
 
 				left ks kss
@@ -171,7 +175,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 		updateProc :: KeyProc -> GameGame -> (ImageResource -> Scr, GameGame)
 		updateProc kp gs = (renderProc gs', gs')
 			where
-				time' = max 0 (time gs - one `div` 25)
+				time' = max 0 (time gs - 1)
 				(fld', screv') = scrollEvent (fld gs) $ getScrollPos (pl gs) `div` chrSize + 18
 
 				(pl', plev) = updatePlayer kp fld' (pl gs)
@@ -179,12 +183,12 @@ doGame fldmap kss = loop (head kss) initialState kss
 				actors' = filterActors $ map fst actors_updates
 				ev' = concatMap snd actors_updates
 
-				(pl'', actors'') = hitcheck pl' actors'
+				(pl'', actors'', ev'') = hitcheck pl' actors'
 
 				gstmp = gs { pl = pl'', fld = fld', actors = actors'', time = time' }
-				gs' = procEvent gstmp (plev ++ ev' ++ screv')
+				gs' = procEvent gstmp (plev ++ ev' ++ screv' ++ ev'')
 
-		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * one }
+		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * timeBase }
 
 -- ゲームオーバー
 doGameOver fldmap kss = doTitle fldmap kss
@@ -220,12 +224,8 @@ procEvent gs ev = foldl proc gs ev
 					where a = newCoinGet cx cy
 
 		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
-		proc gs (EvAppearEnemy cx cy c) = gs { actors = actors gs ++ [ene] }
-			where
-				ene = case c of
-					'k'	-> ActorWrapper $ newKuribo cx cy
-					'n'	-> ActorWrapper $ newNokonoko cx cy
-		proc gs (EvScoreAddEfe sx sy imgtype) = gs { actors = actors gs ++ [ActorWrapper $ newScoreAdd sx sy imgtype] }
+		proc gs (EvAddActor act) = gs { actors = actors gs ++ [act] }
+		proc gs (EvScoreAddEfe sx sy pnt) = gs { actors = actors gs ++ [ActorWrapper $ newScoreAdd sx sy pnt] }
 
 -- 描画
 renderProc :: GameGame -> ImageResource -> Scr
@@ -254,7 +254,7 @@ renderInfo gs imgres sur = do
 	puts 18 1 "WORLD"
 	puts 19 2 "1-1"
 	puts 25 1 "TIME"
-	puts 26 2 $ deciWide 3 ' ' ((time gs + one-1) `div` one)
+	puts 26 2 $ deciWide 3 '0' ((time gs + timeBase-1) `div` timeBase)
 
 	where
 		puts = fontPut sur fontsur
@@ -263,7 +263,7 @@ renderInfo gs imgres sur = do
 -- タイトル画面
 renderTitle imgres sur = do
 	blitSurface (getImageSurface imgres ImgTitle) Nothing sur (pt (5*8) (3*8))
-	puts 13 14 "@1985 NINTENDO"
+--	puts 13 14 "@1985 NINTENDO"
 	puts 9 17 "> 1 PLAYER GAME"
 --	puts 9 19 "  2 PLAYER GAME"
 	puts 12 22 "TOP- 000000"

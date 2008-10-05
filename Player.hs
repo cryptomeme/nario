@@ -9,7 +9,8 @@ module Player (
 	playerGetCoin,
 	addScore,
 	getScrollPos,
-	getPlayerYPos,
+	getPlayerX,
+	getPlayerY,
 	getPlayerVY,
 	getPlayerHitRect,
 	getPlayerCoin,
@@ -31,14 +32,16 @@ import Field
 import Event
 
 
-walkVx = one * 3 `div` 2
-runVx = one * 3
-maxVy = one * 6
-acc = one `div` 6
-jumpVy = -13 * gravity
-scrollMinX = 5 * chrSize
+walkVx = one * 4 `div` 2
+runVx = one * 11 `div` 4
+maxVy = one * 5
+acc = one `div` 32
+acc2 = one `div` 14
+jumpVy = -12 * gravity
+jumpVy2 = -13 * gravity
+scrollMinX = 5 * chrSize + 6
 scrollMaxX = 8 * chrSize
-gravity2 = one `div` 4		-- Aを長押ししたときの重力
+gravity2 = one `div` 6		-- Aを長押ししたときの重力
 stampVy = -8 * gravity
 undeadFrame = frameRate * 2
 
@@ -120,28 +123,27 @@ moveX kp self =
 		then self' { lr = lr', pat = pat', anm = anm' }
 		else self'
 	where
-		ax = if padd then 0 else (-padl + padr) * acc
+		axtmp = if padd then 0 else (-padl + padr) * nowacc
+		ax = if sgn (axtmp * vx self) < 0 then axtmp * 2 else axtmp
 		vx'
 			| ax /= 0			= rangeadd (vx self) ax (-maxspd) maxspd
 			| stand self		= friction (vx self) acc
 			| otherwise			= vx self
 		x' = max xmin $ (x self) + vx'
-		scrx'
-			| vx' > 0 && (x' - (scrx self)) `div` one > scrollPos	= (scrx self) + vx'
-			| otherwise												= (scrx self)
-
-		scrollPos = (max vx' 0) * (scrollMaxX - scrollMinX) `div` runVx + scrollMinX
 
 		padd = if isPressed (kp PadD) then True else False
 		padl = if isPressed (kp PadL) then 1 else 0
 		padr = if isPressed (kp PadR) then 1 else 0
 		maxspd
 			| not $ stand self	= walkVx `div` 2
-			| isPressed (kp PadB)	= walkVx * 2
+			| isPressed (kp PadB)	= runVx
 			| otherwise				= walkVx
-		xmin = (scrx self) + chrSize `div` 2 * one
+		nowacc
+			| isPressed (kp PadB)	= acc2
+			| otherwise				= acc
+		xmin = (scrx self + chrSize `div` 2) * one
 
-		self' = self { x = x', vx = vx', scrx = scrx' }
+		self' = self { x = x', vx = vx' }
 
 		lr' =
 			case (-padl + padr) of
@@ -159,7 +161,6 @@ moveX kp self =
 			| otherwise		= ((anm self) + (abs vx')) `mod` (walkPatNum * anmCnt)
 		anmCnt = walkVx * 3
 
-
 -- 横移動チェック
 checkX :: Field -> Player -> Player
 checkX fld self
@@ -175,6 +176,17 @@ checkX fld self
 				cy = cellCrd (y self - chrSize `div` 2 * one)
 				ofsx (-1) = -6 * one
 				ofsx   1  =  5 * one
+
+-- スクロール
+scroll :: Player -> Player -> Player
+scroll opl self = self { scrx = scrx' }
+	where
+		odx = x opl `div` one - scrx opl
+		dx = (max 0 $ vx self) * (scrollMaxX - scrollMinX) `div` runVx + scrollMinX
+		scrx'
+			| d > 0		= scrx self + d
+			| otherwise	= scrx self
+		d = x self `div` one - scrx self - (max odx dx)
 
 
 -- 重力による落下
@@ -221,13 +233,13 @@ checkCeil fld self
 		yground y = (cellCrd y) * (chrSize * one)
 		y' = ((cy + 1) * chrSize + yofs) * one
 
-
 -- ジャンプする？
 doJump :: KeyProc -> Player -> Player
 doJump kp self
-	| stand self && kp PadA == Pushed	= self { vy = jumpVy, stand = False, pat = patJump }
+	| stand self && kp PadA == Pushed	= self { vy = vy', stand = False, pat = patJump }
 	| otherwise							= self
-
+	where
+		vy' = (jumpVy2 - jumpVy) * (abs $ vx self) `div` runVx + jumpVy
 
 -- 更新処理
 updatePlayer :: KeyProc -> Field -> Player -> (Player, [Event])
@@ -242,7 +254,7 @@ updatePlayer kp fld self =
 -- 通常時
 updateNormal :: KeyProc -> Field -> Player -> (Player, [Event])
 updateNormal kp fld self =
-	moveY $ checkX fld $ moveX kp self
+	moveY $ scroll self $ checkX fld $ moveX kp self
 	where
 		moveY = checkCeil fld . doJump kp . checkFloor fld . fall (isPressed $ kp PadA)
 
@@ -252,11 +264,15 @@ updateDead kp fld self = (fall False self, [])
 
 -- スクロール位置取得
 getScrollPos :: Player -> Int
-getScrollPos self = (scrx self) `div` one
+getScrollPos = scrx
+
+-- Ｘ座標取得
+getPlayerX :: Player -> Int
+getPlayerX = x
 
 -- Ｙ座標取得
-getPlayerYPos :: Player -> Int
-getPlayerYPos = (`div` one) . y
+getPlayerY :: Player -> Int
+getPlayerY = y
 
 -- Ｙ速度取得
 getPlayerVY :: Player -> Int

@@ -66,3 +66,6 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
 	存在型
 	http://d.hatena.ne.jp/syd_syd/20080805#p2
+
+	Haskellの循環import問題 - ABAの日誌
+	http://d.hatena.ne.jp/ABA/20060627#p1

@@ -1,3 +1,4 @@
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- フラワー
 
 module Actor.Flower (
@@ -12,9 +13,8 @@ import Util (sgn)
 import AppUtil (getImageSurface, cellCrd, Rect(..))
 import Images
 import Field
-import Player (PlayerType(..), getPlayerType, setPlayerType)
-
-maxVy = one * 6
+import Player (PlayerType(..), getPlayerType, setPlayerType, addScore)
+import Event (Event(..))
 
 
 data Flower = Flower {
@@ -36,13 +36,14 @@ instance Actor Flower where
 			xx = x self `div` one
 			yy = y self `div` one
 
-	onHit pl self = (setPlayerType nt pl, Nothing)
+	onHit pl self = (addScore pointFlower $ setPlayerType nt pl, Nothing, ev)
 		where
 			nt = case typ of
 				SmallNario	-> SuperNario
 				SuperNario	-> FireNario
 				otherwise	-> typ
 			typ = getPlayerType pl
+			ev = [EvScoreAddEfe (x self `div` one) (y self `div` one - chrSize * 2) pointFlower]
 
 
 newFlower :: Int -> Int -> Flower

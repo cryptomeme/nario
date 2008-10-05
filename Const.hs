@@ -16,4 +16,14 @@ one = 256 :: Int
 chrSize = 16 :: Int
 
 -- 重力
-gravity = one `div` 2
+gravity = one * 2 `div` 5
+
+
+-- ポイント
+pointKuribo = 100	:: Int
+pointNokonoko = 100	:: Int
+pointKinoko = 1000	:: Int
+pointFlower = 1000	:: Int
+pointBreakBlock = 50	:: Int
+pointGetCoin = 200	:: Int
+pointKoura = 400	:: Int

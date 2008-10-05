@@ -1,3 +1,4 @@
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- スコアが増えるときの増分表示
 
 module Actor.ScoreAdd (
@@ -14,7 +15,7 @@ import Images
 vy = -1
 
 data ScoreAdd = ScoreAdd {
-	imgtype :: ImageType,
+	pnt :: Int,
 	sx :: Int,
 	sy :: Int,
 	cnt :: Int
@@ -25,11 +26,18 @@ instance Actor ScoreAdd where
 	update _ self = (self { sy = sy self + vy, cnt = cnt self + 1 }, [])
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres $ imgtype self) Nothing sur (pt (sx self - scrx) (sy self))
+		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt (sx self - scrx) (sy self))
 		return ()
+		where
+			imgtype = case pnt self of
+				100		-> Img100
+				200		-> Img200
+				400		-> Img400
+				500		-> Img500
+				1000	-> Img1000
 
 	bDead self = cnt self >= frameRate `div` 2
 
-newScoreAdd :: Int -> Int -> ImageType -> ScoreAdd
-newScoreAdd sx' sy' imgtype' =
-	ScoreAdd { imgtype = imgtype', sx = sx', sy = sy', cnt = 0 }
+newScoreAdd :: Int -> Int -> Int -> ScoreAdd
+newScoreAdd sx' sy' pnt' =
+	ScoreAdd { pnt = pnt', sx = sx', sy = sy', cnt = 0 }
