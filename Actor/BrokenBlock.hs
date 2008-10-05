@@ -1,5 +1,5 @@
--- -*- mode: haskell; Encoding: UTF-8 -*-
--- ブロックを叩いたときのバウンド演出
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
+-- ブロックの破片
 
 module Actor.BrokenBlock (
 	newBrokenBlock

@@ -16,6 +16,7 @@ clean:
 	rm -f $(OBJS)
 	rm -f *.manifest
 	rm -f *.exe
+	rm -f *.hi-boot *.o-boot
 
 doc:
 	haddock -h -o man -l C:\\ghc\\haddock-2.0.0.0 -B c:\\ghc\\ghc-6.8.2 *.hs

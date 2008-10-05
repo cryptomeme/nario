@@ -154,8 +154,6 @@ hitcheck player actors = foldl proc (player, [], []) actors
 				ev' = ev ++ evtmp
 
 
-timeBase = 22
-
 -- ゲーム
 doGame :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
 doGame fldmap kss = loop (head kss) initialState kss

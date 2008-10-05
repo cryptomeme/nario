@@ -10,9 +10,8 @@ import Multimedia.SDL (blitSurface, pt)
 import Actor (Actor(..))
 import Actor.Common (updateActorBase)
 import Const
-import AppUtil (getImageSurface, cellCrd, Rect(..))
+import AppUtil (getImageSurface, Rect(..))
 import Images
-import Field
 import Player (PlayerType(..), getPlayerType, setPlayerType, addScore)
 import Event (Event(..))
 

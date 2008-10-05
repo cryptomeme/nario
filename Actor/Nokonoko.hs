@@ -11,7 +11,7 @@ import Actor (Actor(..), ActorWrapper(..))
 import Actor.Common (updateActorBase, stamp)
 import Actor.Koura
 import Const
-import AppUtil (getImageSurface, cellCrd, Rect(..))
+import AppUtil (getImageSurface, Rect(..))
 import Images
 import Player (setPlayerDamage, stampPlayer, addScore)
 import Event (Event(..))
@@ -36,7 +36,10 @@ instance Actor Nokonoko where
 		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt (x self `div` one - chrSize `div` 2 - scrx) (y self `div` one - ofsH - 8))
 		return ()
 		where
-			imgtype = [ImgNoko0, ImgNoko1] !! (cnt self `mod` 16 `div` 8)
+			imgtype = imgtbl !! (cnt self `mod` 16 `div` 8)
+			imgtbl = if vx self < 0
+				then [ImgNokoL0, ImgNokoL1]
+				else [ImgNokoR0, ImgNokoR1]
 
 	bDead self = y self >= (screenHeight + chrSize * 3) * one || x self <= -chrSize * one
 
