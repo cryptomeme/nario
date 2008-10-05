@@ -12,9 +12,11 @@ import Util (sgn)
 import AppUtil (getImageSurface, cellCrd, Rect(..))
 import Images
 import Field
-import Player (PlayerType(..), getPlayerType, setPlayerType)
+import Player (PlayerType(..), getPlayerType, setPlayerType, addScore)
 
 maxVy = one * 6
+
+pointKinoko = 1000
 
 
 data Kinoko = Kinoko {
@@ -52,7 +54,7 @@ instance Actor Kinoko where
 			xx = x self `div` one
 			yy = y self `div` one
 
-	onHit pl self = (setPlayerType nt pl, Nothing)
+	onHit pl self = (addScore pointKinoko $ setPlayerType nt pl, Nothing)
 		where
 			nt = case typ of
 				SmallNario	-> SuperNario

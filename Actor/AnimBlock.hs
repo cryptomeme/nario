@@ -13,9 +13,6 @@ import Images
 import Field
 import Event
 
--- ============================================================================
--- AnimBlock
---	ブロックを叩いたときのバウンド演出
 
 data AnimBlock = AnimBlock {
 	startcy :: Int,
@@ -39,7 +36,7 @@ instance Actor AnimBlock where
 				else []
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres $ chr2img $ chr self) Nothing sur (pt ((x self) `div` one - scrx) ((y self) `div` one - 8))
+		blitSurface (getImageSurface imgres $ chr2img $ chr self) Nothing sur (pt (x self `div` one - scrx) (y self `div` one - 8))
 		return ()
 
 	bDead self = vy self > 0 && y self >= startcy self * chrSize * one

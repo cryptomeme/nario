@@ -22,12 +22,20 @@ import Actor.Kuribo
 import Actor.Nokonoko
 import Actor.Kinoko
 import Actor.Flower
+import Actor.BrokenBlock
+import Actor.CoinGet
+import Actor.ScoreAdd
 
 -- 背景色
 backColor = 0x5080FF
 
 -- 描画コマンド
 type Scr = Surface -> IO ()
+
+
+pointBreakBlock = 50
+pointGetCoin = 200
+
 
 -- エントリ
 main :: IO ()
@@ -109,7 +117,6 @@ doTitle fldmap kss = loop kss
 			| otherwise				= loop kss
 
 
-
 -- マップのスクロールに応じたイベント
 scrollEvent :: Field -> Int -> (Field, [Event])
 scrollEvent fld cx
@@ -124,7 +131,6 @@ scrollEvent fld cx
 		event cy c
 			| c `elem` "kn"	= Just $ EvAppearEnemy cx cy c
 			| otherwise		= Nothing
-
 
 
 -- 当たり判定
@@ -190,23 +196,36 @@ procEvent gs ev = foldl proc gs ev
 	where
 		proc gs (EvHitBlock imgtype cx cy bSuper)
 			| hardBlock c			= gs
-			| bSuper && breakable c	= gs { fld = fieldSet (fld gs) cx cy ' ' }
-			| otherwise				= gs { fld = fld', actors = actors' }
+			| bSuper && breakable c	= breakBlock gs cx cy
+			| c == 'K'				= genKinoko
+			| c == '?'				= getCoin
+			| otherwise				= gs'
 			where
 				c = fieldRef (fld gs) cx cy
-				items
-					| c == 'K'	= if not bSuper then [ActorWrapper $ newKinoko cx cy] else [ActorWrapper $ newFlower cx cy]
-					| otherwise	= []
-				actors' = actors gs ++ [ActorWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy] ++ items
-				fld' = fieldSet (fld gs) cx cy '*'
 				breakable c = c == 'O'
+
+				gs' = gs { fld = fld', actors = actors' }
+				actors' = actors gs ++ [ActorWrapper $ newAnimBlock cx cy $ fieldRef (fld gs) cx cy]
+				fld' = fieldSet (fld gs) cx cy '*'
+
+				breakBlock gs cx cy =
+					gs {
+						fld = fieldSet (fld gs) cx cy ' ',
+						actors = actors gs ++ map ActorWrapper (newBrokenBlock cx cy),
+						pl = addScore pointBreakBlock $ pl gs
+						}
+				genKinoko = gs' { actors = actors gs' ++ [a] }
+					where a = if not bSuper then ActorWrapper $ newKinoko cx cy else ActorWrapper $ newFlower cx cy
+				getCoin = gs' { actors = actors gs' ++ [ActorWrapper a], pl = addScore pointGetCoin $ playerGetCoin $ pl gs' }
+					where a = newCoinGet cx cy
+
 		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
 		proc gs (EvAppearEnemy cx cy c) = gs { actors = actors gs ++ [ene] }
 			where
 				ene = case c of
 					'k'	-> ActorWrapper $ newKuribo cx cy
 					'n'	-> ActorWrapper $ newNokonoko cx cy
-
+		proc gs (EvScoreAddEfe sx sy imgtype) = gs { actors = actors gs ++ [ActorWrapper $ newScoreAdd sx sy imgtype] }
 
 -- 描画
 renderProc :: GameGame -> ImageResource -> Scr
@@ -231,7 +250,7 @@ renderInfo :: GameGame -> ImageResource -> Scr
 renderInfo gs imgres sur = do
 	puts 3 1 "NARIO"
 	puts 3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
-	puts 11 2 ("?*" ++ deciWide 2 '0' (getPlayerMedal (pl gs)))
+	puts 11 2 ("?*" ++ deciWide 2 '0' (getPlayerCoin (pl gs)))
 	puts 18 1 "WORLD"
 	puts 19 2 "1-1"
 	puts 25 1 "TIME"

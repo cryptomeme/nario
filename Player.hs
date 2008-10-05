@@ -6,11 +6,13 @@ module Player (
 	newPlayer,
 	updatePlayer,
 	renderPlayer,
+	playerGetCoin,
+	addScore,
 	getScrollPos,
 	getPlayerYPos,
 	getPlayerVY,
 	getPlayerHitRect,
-	getPlayerMedal,
+	getPlayerCoin,
 	getPlayerScore,
 	getPlayerType,
 	setPlayerType,
@@ -60,7 +62,7 @@ data Player = Player {
 	stand :: Bool,
 	undeadCount :: Int,
 
-	medal :: Int,
+	coin :: Int,
 	score :: Int,
 
 	lr :: Int,
@@ -79,7 +81,7 @@ newPlayer = Player {
 	stand = False,
 	undeadCount = 0,
 
-	medal = 0,
+	coin = 0,
 	score = 0,
 
 	lr = 1,
@@ -205,18 +207,19 @@ checkFloor fld self
 checkCeil :: Field -> Player -> (Player, [Event])
 checkCeil fld self
 	| stand self || vy self >= 0 || not isCeil	= (self, [])
-	| otherwise = (self { vy = 0, score = (score self) + 10 }, [EvHitBlock ImgBlock2 cx cy (pltype self /= SmallNario)])
+	| otherwise = (self { y = y', vy = 0 }, [EvHitBlock ImgBlock2 cx cy (pltype self /= SmallNario)])
 	where
 		yofs = case pltype self of
-			SmallNario	-> 15
-			SuperNario	-> 30
-			FireNario	-> 30
+			SmallNario	-> 14
+			SuperNario	-> 28
+			FireNario	-> 28
 		ytmp = y self - yofs * one
 
 		cx = cellCrd $ x self
 		cy = cellCrd ytmp
 		isCeil = isBlock $ fieldRef fld cx cy
 		yground y = (cellCrd y) * (chrSize * one)
+		y' = ((cy + 1) * chrSize + yofs) * one
 
 
 -- ジャンプする？
@@ -266,9 +269,9 @@ getPlayerHitRect self = Rect (xx - 6) (yy - 16) (xx + 6) yy
 		xx = x self `div` one
 		yy = y self `div` one
 
--- メダル枚数取得
-getPlayerMedal :: Player -> Int
-getPlayerMedal = medal
+-- コイン枚数取得
+getPlayerCoin :: Player -> Int
+getPlayerCoin = coin
 
 -- スコア取得
 getPlayerScore :: Player -> Int
@@ -292,6 +295,14 @@ setPlayerDamage self
 -- 敵を踏み潰した
 stampPlayer :: Player -> Player
 stampPlayer self = self { vy = stampVy }
+
+-- コイン取得
+playerGetCoin :: Player -> Player
+playerGetCoin self = self { coin = (coin self + 1) `mod` 100 }
+
+-- スコア加算
+addScore :: Int -> Player -> Player
+addScore a self = self { score = score self + a }
 
 -- 描画
 renderPlayer sur imgres scrx self = do

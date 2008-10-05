@@ -13,3 +13,6 @@ data Event =
 
 		-- 敵登場
 	|	EvAppearEnemy Int Int Cell
+
+		-- スコア加算エフェクト
+	|	EvScoreAddEfe Int Int ImageType
