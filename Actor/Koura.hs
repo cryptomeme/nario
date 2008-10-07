@@ -5,12 +5,12 @@ module Actor.Koura (
 	newKoura
 ) where
 
-import Multimedia.SDL (blitSurface, pt)
+--import Multimedia.SDL (blitSurface, pt)
 
 import Actor (Actor(..), ActorWrapper(..))
 import Actor.Common (updateActorBase, stamp)
+import AppUtil (Rect(..), putimg)
 import Const
-import AppUtil (getImageSurface, Rect(..))
 import Images
 import Player (getPlayerX, stampPlayer, setPlayerDamage, addScore)
 import Event (Event(..))
@@ -43,7 +43,7 @@ instance Actor Koura where
 			gotoDie = self { x = -chrSize * one }
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8))
+		putimg sur imgres imgtype ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8)
 		return ()
 		where
 			imgtype = ImgKoura

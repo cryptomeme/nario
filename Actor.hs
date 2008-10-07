@@ -1,4 +1,7 @@
 {-# OPTIONS_GHC -fglasgow-exts #-}
+-- -*- mode: haskell; Encoding: UTF-8 -*-
+
+-- ゲーム内に登場するオブジェクト
 
 module Actor (
 	Actor(..),
@@ -10,8 +13,8 @@ module Actor (
 
 import Multimedia.SDL (Surface)
 
-import Event (Event)
 import AppUtil (ImageResource, Rect)
+import Event (Event)
 import Field (Field)
 import Player (Player)
 
@@ -29,7 +32,6 @@ class Actor a where
 	onHit :: Player -> a -> (Player, Maybe ActorWrapper, [Event])
 	onHit pl ac = (pl, Nothing, [])
 
--- ============================================================================
 
 ----
 data ActorWrapper = forall a. Actor a => ActorWrapper a	-- 存在型aの動く範囲を型クラスに制限

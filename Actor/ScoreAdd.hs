@@ -5,10 +5,10 @@ module Actor.ScoreAdd (
 	newScoreAdd
 ) where
 
-import Multimedia.SDL hiding (Event)
+--import Multimedia.SDL hiding (Event)
 
 import Actor (Actor(..))
-import AppUtil
+import AppUtil (putimg)
 import Const
 import Images
 
@@ -26,7 +26,7 @@ instance Actor ScoreAdd where
 	update _ self = (self { sy = sy self + vy, cnt = cnt self + 1 }, [])
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt (sx self - scrx) (sy self))
+		putimg sur imgres imgtype (sx self - scrx) (sy self)
 		return ()
 		where
 			imgtype = case pnt self of

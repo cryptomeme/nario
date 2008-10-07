@@ -8,8 +8,8 @@ module Actor.BrokenBlock (
 import Multimedia.SDL hiding (Event)
 
 import Actor (Actor(..))
-import AppUtil
 import Const
+import AppUtil (putimg)
 import Images
 
 
@@ -24,7 +24,7 @@ instance Actor BrokenBlock where
 	update _ self = (self { x = x self + vx self, y = y self + vy self, vy = vy self + gravity }, [])
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres ImgBroken) Nothing sur (pt (x self `div` one - 4 - scrx) (y self `div` one - 4 - 8))
+		putimg sur imgres ImgBroken (x self `div` one - 4 - scrx) (y self `div` one - 4 - 8)
 		return ()
 
 	bDead self = y self >= (screenHeight + chrSize * 2) * one

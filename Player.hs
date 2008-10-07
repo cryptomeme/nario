@@ -25,7 +25,7 @@ import Multimedia.SDL (blitSurface, pt)
 import Data.Bits ((.&.))
 
 import Util
-import AppUtil (KeyProc, isPressed, PadBtn(..), cellCrd, KeyState(..), getImageSurface, Rect(..))
+import AppUtil (KeyProc, isPressed, PadBtn(..), cellCrd, KeyState(..), getImageSurface, Rect(..), putimg)
 import Const
 import Images
 import Field
@@ -119,7 +119,7 @@ imgTableFire = [
 -- 横移動
 moveX :: KeyProc -> Player -> Player
 moveX kp self =
-	if (stand self)
+	if stand self
 		then self' { lr = lr', pat = pat', anm = anm' }
 		else self'
 	where
@@ -323,12 +323,12 @@ addScore a self = self { score = score self + a }
 -- 描画
 renderPlayer sur imgres scrx self = do
 	if undeadCount self == 0 || (undeadCount self .&. 1) /= 0
-		then blitSurface (getImageSurface imgres imgtype) Nothing sur pos >> return ()
+		then putimg sur imgres imgtype sx posy
 		else return ()
 	where
-		pos = case pltype self of
-			SmallNario	-> pt sx $ sy - chrSize + 1
-			otherwise	-> pt sx $ sy - chrSize * 2 + 1
+		posy = case pltype self of
+			SmallNario	-> sy - chrSize + 1
+			otherwise	-> sy - chrSize * 2 + 1
 		imgtype
 			| plstate self == Dead	= ImgNarioDead
 			| otherwise				= imgtbl !! lr self !! pat self

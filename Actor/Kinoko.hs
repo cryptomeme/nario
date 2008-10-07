@@ -5,12 +5,12 @@ module Actor.Kinoko (
 	newKinoko
 ) where
 
-import Multimedia.SDL (blitSurface, pt)
+--import Multimedia.SDL (blitSurface, pt)
 
 import Actor (Actor(..))
 import Actor.Common (updateActorBase)
+import AppUtil (Rect(..), putimg)
 import Const
-import AppUtil (getImageSurface, Rect(..))
 import Images
 import Player (PlayerType(..), getPlayerType, setPlayerType, addScore)
 import Event (Event(..))
@@ -32,7 +32,7 @@ instance Actor Kinoko where
 			(x', y', vx', vy') = updateActorBase fld (x self, y self, vx self, vy self)
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8))
+		putimg sur imgres imgtype ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8)
 		return ()
 		where
 			imgtype = ImgKinoko

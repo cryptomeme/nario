@@ -1,18 +1,17 @@
--- -*- mode: haskell; Encoding: UTF-8 -*-
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- ブロックを叩いたときのバウンド演出
 
 module Actor.AnimBlock (
 	newAnimBlock
 ) where
 
-import Multimedia.SDL hiding (Event)
+--import Multimedia.SDL hiding (Event)
 
 import Actor (Actor(..))
+import AppUtil (cellCrd, putimg)
 import Const
-import AppUtil
-import Images
-import Field
-import Event
+import Field (Cell, chr2img)
+import Event (Event(..))
 
 
 data AnimBlock = AnimBlock {
@@ -32,12 +31,12 @@ instance Actor AnimBlock where
 			vy' = vy self + gravity
 			y' = y self + vy'
 			self' = self { vy = vy', y = y' }
-			ev' = if (bDead self')
+			ev' = if bDead self'
 				then [EvSetField (cellCrd $ x self) (startcy self) $ chr self]
 				else []
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres $ chr2img $ chr self) Nothing sur (pt (x self `div` one - scrx) (y self `div` one - 8))
+		putimg sur imgres (chr2img $ chr self) (x self `div` one - scrx) (y self `div` one - 8)
 		return ()
 
 	bDead self = vy self > 0 && y self >= startcy self * chrSize * one

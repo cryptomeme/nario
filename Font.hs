@@ -1,26 +1,36 @@
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- Bitmap font
 module Font (
+	Font(..),
 	fontPut,
 	fontPutc
 ) where
 
-import Multimedia.SDL
-import Control.Monad
-import Data.Char
+import Multimedia.SDL (blitSurface, pt, Rect(..), Surface)
+import Control.Monad (zipWithM_)
+import Data.Char (ord)
 
-fontWidth = 8
-fontHeight = 8
-fontXN = 16
+data Font = Font {
+	fontSurface :: Surface,
+	fontWidth :: Int,
+	fontHeight :: Int,
+	fontXN :: Int
+	}
+
 
 -- 文字列表示
-fontPut sur imgsur x y str = zipWithM_ (\i c -> fontPutc sur imgsur i y c) [x..] str
+fontPut font sur x y str = zipWithM_ (\i c -> fontPutc font sur i y c) [x..] str
 
 -- １文字表示
-fontPutc sur imgsur x y c = do
-	blitSurface imgsur (Just rc) sur pos
+fontPutc font sur x y c = do
+	blitSurface (fontSurface font) (Just rc) sur pos
 	where
-		pos = pt (x * fontWidth) (y * fontHeight)
+		pos = pt (x * (fontWidth font)) (y * (fontHeight font))
 		ic = ord c - ord ' '
-		u = (ic `mod` fontXN) * fontWidth
-		v = (ic `div` fontXN) * fontHeight
-		rc = Rect u v fontWidth fontHeight
+		u = (ic `mod` xn) * w
+		v = (ic `div` xn) * h
+		rc = Rect u v w h
+
+		xn = fontXN font
+		w = fontWidth font
+		h = fontHeight font

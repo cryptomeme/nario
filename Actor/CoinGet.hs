@@ -1,4 +1,4 @@
--- -*- mode: haskell; Encoding: UTF-8 -*-
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- コインを取ったときの演出コイン
 
 module Actor.CoinGet (
@@ -8,10 +8,10 @@ module Actor.CoinGet (
 import Multimedia.SDL hiding (Event)
 
 import Actor (Actor(..))
-import AppUtil
+import AppUtil (putimg)
 import Const
 import Images
-import Event
+import Event (Event(..))
 
 
 data CoinGet = CoinGet {
@@ -32,7 +32,7 @@ instance Actor CoinGet where
 			self' = self { y = y self + vy self, vy = vy self + gravity, cnt = cnt self + 1 }
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres imgtype) Nothing sur (pt (sx self - scrx) (y self `div` one - 8))
+		putimg sur imgres imgtype (sx self - scrx) (y self `div` one - 8)
 		return ()
 		where
 			imgtype = imgtbl !! (cnt self `div` 2 `mod` 4)

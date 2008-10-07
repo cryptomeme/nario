@@ -4,9 +4,6 @@ http://d.hatena.ne.jp/authorNari/20080422/1208880928
 
 を Haskell/HSDL で作る
 
-HSDL
-http://fxp.hp.infoseek.co.jp/haskell/HSDL/
-
 
 
 ★操作
@@ -14,10 +11,10 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 		上下左右
 
 	スペースキー, z
-		Aボタン
+		ジャンプ（Aボタン）
 
 	シフトキー
-		Bボタン
+		ダッシュ（Bボタン）
 
 	エスケープキー
 		終了
@@ -46,7 +43,7 @@ http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 	make
 
 　○実行
-	できた実行ファイルを入力、または
+	できた実行ファイルを起動する、または
 	make run
 
 

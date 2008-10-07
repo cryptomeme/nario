@@ -5,14 +5,13 @@ module Actor.Flower (
 	newFlower
 ) where
 
-import Multimedia.SDL (blitSurface, pt)
+--import Multimedia.SDL (itSurface, pt)
 
 import Actor (Actor(..))
 import Const
 import Util (sgn)
-import AppUtil (getImageSurface, cellCrd, Rect(..))
+import AppUtil (cellCrd, Rect(..), putimg)
 import Images
-import Field
 import Player (PlayerType(..), getPlayerType, setPlayerType, addScore)
 import Event (Event(..))
 
@@ -28,7 +27,7 @@ instance Actor Flower where
 	update fld self = (self, [])
 
 	render self imgres scrx sur = do
-		blitSurface (getImageSurface imgres ImgFlower) Nothing sur (pt ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - 15 - 8))
+		putimg sur imgres ImgFlower ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - 15 - 8)
 		return ()
 
 	getHitRect self = Just $ Rect (xx - 8) (yy - 16) (xx + 8) yy

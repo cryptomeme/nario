@@ -239,32 +239,27 @@ renderProc gs imgres sur = do
 
 	return ()
 
-tailN n = reverse . take n . reverse
-
-deciWide w c n = tailN w $ replicate w c ++ show n
-
 -- 情報描画
 renderInfo :: GameGame -> ImageResource -> Scr
 renderInfo gs imgres sur = do
-	puts 3 1 "NARIO"
-	puts 3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
-	puts 11 2 ("?*" ++ deciWide 2 '0' (getPlayerCoin (pl gs)))
+	puts  3 1 "NARIO"
+	puts  3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
+	puts 11 2 ("?*" ++ deciWide 2 '0' (getPlayerCoin $ pl gs))
 	puts 18 1 "WORLD"
 	puts 19 2 "1-1"
 	puts 25 1 "TIME"
-	puts 26 2 $ deciWide 3 '0' ((time gs + timeBase-1) `div` timeBase)
-
+	puts 26 2 $ deciWide 3 '0' $ (time gs + timeBase-1) `div` timeBase
 	where
-		puts = fontPut sur fontsur
-		fontsur = getImageSurface imgres ImgFont
+		puts = fontPut font sur
+		font = Font (getImageSurface imgres ImgFont) 8 8 16
 
 -- タイトル画面
 renderTitle imgres sur = do
-	blitSurface (getImageSurface imgres ImgTitle) Nothing sur (pt (5*8) (3*8))
+	putimg sur imgres ImgTitle (5*8) (3*8)
 --	puts 13 14 "@1985 NINTENDO"
-	puts 9 17 "> 1 PLAYER GAME"
---	puts 9 19 "  2 PLAYER GAME"
+	puts  9 17 "> 1 PLAYER GAME"
+--	puts  9 19 "  2 PLAYER GAME"
 	puts 12 22 "TOP- 000000"
 	where
-		puts = fontPut sur fontsur
-		fontsur = getImageSurface imgres ImgFont
+		puts = fontPut font sur
+		font = Font (getImageSurface imgres ImgFont) 8 8 16

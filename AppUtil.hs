@@ -1,6 +1,6 @@
 module AppUtil where
 
-import Multimedia.SDL (Surface, SDLKey(..), loadBMP, freeSurface, surfacePixelFormat, displayFormat, pfPalette, setColorKey, SurfaceFlag(..))
+import Multimedia.SDL (Surface, SDLKey(..), loadBMP, freeSurface, surfacePixelFormat, displayFormat, pfPalette, setColorKey, SurfaceFlag(..), blitSurface, pt)
 import Data.Maybe (fromJust)
 
 import Const
@@ -67,6 +67,11 @@ releaseImageResource = mapM_ (\(t, sur) -> freeSurface sur)
 
 getImageSurface :: ImageResource -> ImageType -> Surface
 getImageSurface imgres = fromJust . flip lookup imgres
+
+putimg :: Surface -> ImageResource -> ImageType -> Int -> Int -> IO ()
+putimg sur imgres imgtype x y = do
+	blitSurface (getImageSurface imgres imgtype) Nothing sur (pt x y)
+	return ()
 
 
 -- 固定座標系からセル座標系に
