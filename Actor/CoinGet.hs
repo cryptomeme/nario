@@ -31,9 +31,8 @@ instance Actor CoinGet where
 		where
 			self' = self { y = y self + vy self, vy = vy self + gravity, cnt = cnt self + 1 }
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres imgtype (sx self - scrx) (y self `div` one - 8)
-		return ()
 		where
 			imgtype = imgtbl !! (cnt self `div` 2 `mod` 4)
 

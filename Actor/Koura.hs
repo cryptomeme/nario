@@ -43,10 +43,7 @@ instance Actor Koura where
 			gotoDie = self { x = -chrSize * one }
 
 	render self imgres scrx sur = do
-		putimg sur imgres imgtype ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8)
-		return ()
-		where
-			imgtype = ImgKoura
+		putimg sur imgres ImgKoura ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8)
 
 	bDead self = y self >= (screenHeight + chrSize * 3) * one || x self <= -chrSize * one
 

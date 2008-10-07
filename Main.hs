@@ -85,17 +85,27 @@ data GameGame =
 	}
 
 
--- キー入力を処理して描画コマンドを返す
+-- キー入力全体を処理して描画コマンド列を返す
 process :: [[SDLKey]] -> IO [Scr]
 process kss = do
 	imgres <- loadImageResource imageTypes
 	fldmap <- loadField 0
 
 	let tmpscrs = doTitle fldmap kss
+	let scrs = zipWith (common imgres) tmpscrs kss
+	return $ scrs ++ [final imgres]
 
-	let scrs = map (\scr sur -> scr imgres sur >> flipSurface sur >> return ()) $ tmpscrs
-	return $ scrs ++ [(\sur -> do {releaseImageResource imgres})]
-
+	where
+		-- 共通動作
+		common imgres scr ks sur = do
+			scr imgres sur
+			if SDLK_s `elem` ks
+				then saveBMP sur "ss.bmp" >> return ()
+				else return ()
+			flipSurface sur
+			return ()
+		-- 後始末
+		final imgres sur = releaseImageResource imgres
 
 -- タイトル
 doTitle :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
@@ -171,7 +181,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 
 		-- 更新
 		updateProc :: KeyProc -> GameGame -> (ImageResource -> Scr, GameGame)
-		updateProc kp gs = (renderProc gs', gs')
+		updateProc kp gs = (scr', gs')
 			where
 				time' = max 0 (time gs - 1)
 				(fld', screv') = scrollEvent (fld gs) $ getScrollPos (pl gs) `div` chrSize + 18
@@ -185,6 +195,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 
 				gstmp = gs { pl = pl'', fld = fld', actors = actors'', time = time' }
 				gs' = procEvent gstmp (plev ++ ev' ++ screv' ++ ev'')
+				scr' = renderProc gs'
 
 		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * timeBase }
 

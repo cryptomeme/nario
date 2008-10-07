@@ -25,7 +25,7 @@ import Multimedia.SDL (blitSurface, pt)
 import Data.Bits ((.&.))
 
 import Util
-import AppUtil (KeyProc, isPressed, PadBtn(..), cellCrd, KeyState(..), getImageSurface, Rect(..), putimg)
+import AppUtil (KeyProc, padPressed, padPressing, PadBtn(..), cellCrd, KeyState(..), getImageSurface, Rect(..), putimg)
 import Const
 import Images
 import Field
@@ -131,15 +131,15 @@ moveX kp self =
 			| otherwise			= vx self
 		x' = max xmin $ (x self) + vx'
 
-		padd = if isPressed (kp PadD) then True else False
-		padl = if isPressed (kp PadL) then 1 else 0
-		padr = if isPressed (kp PadR) then 1 else 0
+		padd = if padPressing kp PadD then True else False
+		padl = if padPressing kp PadL then 1 else 0
+		padr = if padPressing kp PadR then 1 else 0
 		maxspd
 			| not $ stand self	= walkVx `div` 2
-			| isPressed (kp PadB)	= runVx
+			| padPressing kp PadB	= runVx
 			| otherwise				= walkVx
 		nowacc
-			| isPressed (kp PadB)	= acc2
+			| padPressing kp PadB	= acc2
 			| otherwise				= acc
 		xmin = (scrx self + chrSize `div` 2) * one
 
@@ -236,7 +236,7 @@ checkCeil fld self
 -- ジャンプする？
 doJump :: KeyProc -> Player -> Player
 doJump kp self
-	| stand self && kp PadA == Pushed	= self { vy = vy', stand = False, pat = patJump }
+	| stand self && padPressed kp PadA	= self { vy = vy', stand = False, pat = patJump }
 	| otherwise							= self
 	where
 		vy' = (jumpVy2 - jumpVy) * (abs $ vx self) `div` runVx + jumpVy
@@ -256,7 +256,7 @@ updateNormal :: KeyProc -> Field -> Player -> (Player, [Event])
 updateNormal kp fld self =
 	moveY $ scroll self $ checkX fld $ moveX kp self
 	where
-		moveY = checkCeil fld . doJump kp . checkFloor fld . fall (isPressed $ kp PadA)
+		moveY = checkCeil fld . doJump kp . checkFloor fld . fall (padPressing kp PadA)
 
 -- 死亡時
 updateDead :: KeyProc -> Field -> Player -> (Player, [Event])

@@ -25,9 +25,8 @@ data ScoreAdd = ScoreAdd {
 instance Actor ScoreAdd where
 	update _ self = (self { sy = sy self + vy, cnt = cnt self + 1 }, [])
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres imgtype (sx self - scrx) (sy self)
-		return ()
 		where
 			imgtype = case pnt self of
 				100		-> Img100

@@ -1,4 +1,23 @@
-module AppUtil where
+module AppUtil (
+	KeyState(..),
+	isPressing,
+	KeyProc,
+	keyProc,
+
+	PadBtn(..),
+	padPressing,
+	padPressed,
+
+	ImageResource,
+	loadImageResource,
+	releaseImageResource,
+	getImageSurface,
+	putimg,
+
+	cellCrd,
+	Rect(..),
+	ishit
+) where
 
 import Multimedia.SDL (Surface, SDLKey(..), loadBMP, freeSurface, surfacePixelFormat, displayFormat, pfPalette, setColorKey, SurfaceFlag(..), blitSurface, pt)
 import Data.Maybe (fromJust)
@@ -8,36 +27,42 @@ import Images
 
 -- キーボード処理
 
-data PadBtn =
-	PadU | PadD | PadL | PadR | PadA | PadB
-	deriving (Eq, Show, Enum)
-
 data KeyState =
 	Pushed | Pushing | Released | Releasing
-	deriving (Eq, Show)
+	deriving (Eq)
 
-isPressed Pushed  = True
-isPressed Pushing = True
-isPressed _       = False
+isPressing Pushed  = True
+isPressing Pushing = True
+isPressing _       = False
 
-type KeyProc = PadBtn -> KeyState
+type KeyProc = SDLKey -> KeyState
 
-keyProc bef cur gk
+keyProc :: [SDLKey] -> [SDLKey] -> KeyProc
+keyProc bef cur k
 	| not bp && not cp = Releasing
 	| not bp && cp     = Pushed
 	| bp     && not cp = Released
 	| bp     && cp     = Pushing
 	where
-		bp = any (flip elem bef) phykeys
-		cp = any (flip elem cur) phykeys
-		phykeys = mapPhyKey gk
+		bp = k `elem` bef
+		cp = k `elem` cur
 
-mapPhyKey PadU = [SDLK_UP, SDLK_i]
-mapPhyKey PadD = [SDLK_DOWN, SDLK_k]
-mapPhyKey PadL = [SDLK_LEFT, SDLK_j]
-mapPhyKey PadR = [SDLK_RIGHT, SDLK_l]
-mapPhyKey PadA = [SDLK_SPACE, SDLK_z]
-mapPhyKey PadB = [SDLK_LSHIFT, SDLK_RSHIFT]
+
+-- パッド
+
+data PadBtn =
+	PadU | PadD | PadL | PadR | PadA | PadB
+	deriving (Eq)
+
+padPressing kp btn = any (isPressing . kp) $ mapSDLKey btn
+padPressed kp btn = any ((== Pushed) . kp) $ mapSDLKey btn
+
+mapSDLKey PadU = [SDLK_UP, SDLK_i]
+mapSDLKey PadD = [SDLK_DOWN, SDLK_k]
+mapSDLKey PadL = [SDLK_LEFT, SDLK_j]
+mapSDLKey PadR = [SDLK_RIGHT, SDLK_l]
+mapSDLKey PadA = [SDLK_SPACE, SDLK_z]
+mapSDLKey PadB = [SDLK_LSHIFT, SDLK_RSHIFT]
 
 
 

@@ -26,9 +26,8 @@ data Flower = Flower {
 instance Actor Flower where
 	update fld self = (self, [])
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres ImgFlower ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - 15 - 8)
-		return ()
 
 	getHitRect self = Just $ Rect (xx - 8) (yy - 16) (xx + 8) yy
 		where

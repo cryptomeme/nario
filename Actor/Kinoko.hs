@@ -31,11 +31,8 @@ instance Actor Kinoko where
 			self' = self { x = x', y = y', vx = vx', vy = vy' }
 			(x', y', vx', vy') = updateActorBase fld (x self, y self, vx self, vy self)
 
-	render self imgres scrx sur = do
-		putimg sur imgres imgtype ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8)
-		return ()
-		where
-			imgtype = ImgKinoko
+	render self imgres scrx sur =
+		putimg sur imgres ImgKinoko ((x self) `div` one - chrSize `div` 2 - scrx) ((y self) `div` one - ofsH - 8)
 
 	bDead self = y self >= (screenHeight + chrSize * 3) * one || x self <= -chrSize * one
 

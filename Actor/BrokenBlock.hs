@@ -23,9 +23,8 @@ data BrokenBlock = BrokenBlock {
 instance Actor BrokenBlock where
 	update _ self = (self { x = x self + vx self, y = y self + vy self, vy = vy self + gravity }, [])
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres ImgBroken (x self `div` one - 4 - scrx) (y self `div` one - 4 - 8)
-		return ()
 
 	bDead self = y self >= (screenHeight + chrSize * 2) * one
 

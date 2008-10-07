@@ -7,11 +7,13 @@ replace :: [a] -> Int -> a -> [a]
 replace ls i v = take i ls ++ [v] ++ drop  (i + 1) ls
 
 -- けつの n 個取り出し
-lastN n xs = loop n [] xs
+lastN n xs = supply n [] xs
 	where
-		loop _ acc [] = acc
-		loop 0 acc (x:xs) = loop 0 (tail acc ++ [x]) xs
-		loop n acc (x:xs) = loop (n-1) (acc ++ [x]) xs
+		supply _ acc [] = acc
+		supply 0 acc xs = queue acc xs
+		supply n acc (x:xs) = supply (n-1) (acc ++ [x]) xs
+		queue acc [] = acc
+		queue acc (x:xs) = queue (tail acc ++ [x]) xs
 
 -- 数値の符号を返す
 sgn x

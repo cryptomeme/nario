@@ -31,9 +31,8 @@ instance Actor Kuribo where
 			self' = self { x = x', y = y', vx = vx', vy = vy', cnt = cnt self + 1 }
 			(x', y', vx', vy') = updateActorBase fld (x self, y self, vx self, vy self)
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres imgtype (x self `div` one - chrSize `div` 2 - scrx) (y self `div` one - ofsH - 8)
-		return ()
 		where
 			imgtype = [ImgKuri0, ImgKuri1] !! (cnt self `mod` 16 `div` 8)
 
@@ -65,9 +64,8 @@ data StampedKuribo = StampedKuribo {
 instance Actor StampedKuribo where
 	update fld self = (self { ccnt = ccnt self + 1 }, [])
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres ImgKuriDead (sx self - scrx) (sy self - 7 - 8)
-		return ()
 
 	bDead self = ccnt self >= frameRate `div` 2
 

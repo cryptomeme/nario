@@ -35,9 +35,8 @@ instance Actor AnimBlock where
 				then [EvSetField (cellCrd $ x self) (startcy self) $ chr self]
 				else []
 
-	render self imgres scrx sur = do
+	render self imgres scrx sur =
 		putimg sur imgres (chr2img $ chr self) (x self `div` one - scrx) (y self `div` one - 8)
-		return ()
 
 	bDead self = vy self > 0 && y self >= startcy self * chrSize * one
 
