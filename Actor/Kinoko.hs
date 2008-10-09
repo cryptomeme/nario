@@ -5,8 +5,6 @@ module Actor.Kinoko (
 	newKinoko
 ) where
 
---import Multimedia.SDL (blitSurface, pt)
-
 import Actor (Actor(..))
 import Actor.Common (updateActorBase)
 import AppUtil (Rect(..), putimg)

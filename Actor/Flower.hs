@@ -5,8 +5,6 @@ module Actor.Flower (
 	newFlower
 ) where
 
---import Multimedia.SDL (itSurface, pt)
-
 import Actor (Actor(..))
 import Const
 import Util (sgn)

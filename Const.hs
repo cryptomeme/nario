@@ -21,6 +21,9 @@ chrSize = 16 :: Int
 -- 重力
 gravity = one * 2 `div` 5
 
+-- 最大落下速度
+maxVy = one * 5
+
 
 -- ポイント
 pointKuribo		= 100	:: Int

@@ -1,4 +1,4 @@
--- -*- mode: haskell; Encoding: UTF-8 -*-
+﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
 -- 共通動作
 
 module Actor.Common (
@@ -12,7 +12,6 @@ import Util (sgn)
 import AppUtil (cellCrd)
 import Player (Player(..), getPlayerVY)
 
-maxVy = one * 5
 
 -- 共通動作
 {-

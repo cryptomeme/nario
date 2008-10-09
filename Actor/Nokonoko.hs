@@ -5,8 +5,6 @@ module Actor.Nokonoko (
 	newNokonoko
 ) where
 
---import Multimedia.SDL (blitSurface, pt)
-
 import Actor (Actor(..), ActorWrapper(..))
 import Actor.Common (updateActorBase, stamp)
 import Actor.Koura

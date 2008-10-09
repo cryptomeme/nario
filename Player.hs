@@ -21,7 +21,7 @@ module Player (
 	stampPlayer
 ) where
 
-import Multimedia.SDL (blitSurface, pt)
+--import Multimedia.SDL (blitSurface, pt)
 import Data.Bits ((.&.))
 
 import Util
@@ -30,11 +30,12 @@ import Const
 import Images
 import Field
 import Event
+import Actor (ActorWrapper(..))
+import Actor.Shot
 
 
 walkVx = one * 4 `div` 2
 runVx = one * 11 `div` 4
-maxVy = one * 5
 acc = one `div` 32
 acc2 = one `div` 14
 jumpVy = -12 * gravity
@@ -74,7 +75,7 @@ data Player = Player {
 	}
 
 newPlayer = Player {
-	pltype = SmallNario,
+	pltype = FireNario,
 	plstate = Normal,
 	x = 3 * chrSize * one,
 	y = 13 * chrSize * one,
@@ -241,6 +242,18 @@ doJump kp self
 	where
 		vy' = (jumpVy2 - jumpVy) * (abs $ vx self) `div` runVx + jumpVy
 
+
+-- ショットを撃つ？
+shot :: KeyProc -> Player -> (Player, [Event])
+shot kp self
+	| canShot && padPressed kp PadB	= (shotPl, shotEv)
+	| otherwise						= (self, [])
+	where
+		canShot = pltype self == FireNario
+		shotPl = self
+		shotEv = [EvAddActor $ ActorWrapper $ newShot (x self) (y self) (lr self)]
+
+
 -- 更新処理
 updatePlayer :: KeyProc -> Field -> Player -> (Player, [Event])
 updatePlayer kp fld self =
@@ -253,9 +266,10 @@ updatePlayer kp fld self =
 
 -- 通常時
 updateNormal :: KeyProc -> Field -> Player -> (Player, [Event])
-updateNormal kp fld self =
-	moveY $ scroll self $ checkX fld $ moveX kp self
+updateNormal kp fld self = (self'', ev' ++ ev'')
 	where
+		(self', ev') = moveY $ scroll self $ checkX fld $ moveX kp self
+		(self'', ev'') = shot kp self'
 		moveY = checkCeil fld . doJump kp . checkFloor fld . fall (padPressing kp PadA)
 
 -- 死亡時

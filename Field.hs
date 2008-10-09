@@ -12,9 +12,9 @@ module Field (
 	fieldRef,
 	fieldSet,
 	isBlock,
+	hardBlock,
 	renderField,
-	chr2img,
-	hardBlock
+	chr2img
 ) where
 
 import Multimedia.SDL

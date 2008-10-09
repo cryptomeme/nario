@@ -5,8 +5,6 @@ module Actor.BrokenBlock (
 	newBrokenBlock
 ) where
 
-import Multimedia.SDL hiding (Event)
-
 import Actor (Actor(..))
 import Const
 import AppUtil (putimg)

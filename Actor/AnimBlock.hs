@@ -5,8 +5,6 @@ module Actor.AnimBlock (
 	newAnimBlock
 ) where
 
---import Multimedia.SDL hiding (Event)
-
 import Actor (Actor(..))
 import AppUtil (cellCrd, putimg)
 import Const

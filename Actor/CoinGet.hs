@@ -5,8 +5,6 @@ module Actor.CoinGet (
 	newCoinGet
 ) where
 
-import Multimedia.SDL hiding (Event)
-
 import Actor (Actor(..))
 import AppUtil (putimg)
 import Const

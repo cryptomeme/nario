@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -fglasgow-exts #-}
+﻿{-# LANGUAGE ExistentialQuantification #-}
 -- -*- mode: haskell; Encoding: UTF-8 -*-
 
 -- ゲーム内に登場するオブジェクト
@@ -16,7 +16,7 @@ import Multimedia.SDL (Surface)
 import AppUtil (ImageResource, Rect)
 import Event (Event)
 import Field (Field)
-import Player (Player)
+import {-# SOURCE #-} Player (Player)
 
 
 class Actor a where
