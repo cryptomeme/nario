@@ -250,7 +250,7 @@ shot kp self
 	| otherwise						= (self, [])
 	where
 		canShot = pltype self == FireNario
-		shotPl = self
+		shotPl = self { pat = patShot }
 		shotEv = [EvAddActor $ ActorWrapper $ newShot (x self) (y self) (lr self)]
 
 
