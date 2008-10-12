@@ -32,6 +32,7 @@ import Field
 import Event
 import Actor (ActorWrapper(..))
 import Actor.Shot
+import Mixer
 
 
 walkVx = one * 4 `div` 2
@@ -75,7 +76,7 @@ data Player = Player {
 	}
 
 newPlayer = Player {
-	pltype = FireNario,
+	pltype = SmallNario,
 	plstate = Normal,
 	x = 3 * chrSize * one,
 	y = 13 * chrSize * one,
@@ -235,10 +236,10 @@ checkCeil fld self
 		y' = ((cy + 1) * chrSize + yofs) * one
 
 -- ジャンプする？
-doJump :: KeyProc -> Player -> Player
+doJump :: KeyProc -> Player -> (Player, [Event])
 doJump kp self
-	| stand self && padPressed kp PadA	= self { vy = vy', stand = False, pat = patJump }
-	| otherwise							= self
+	| stand self && padPressed kp PadA	= (self { vy = vy', stand = False, pat = patJump }, [EvSound SndJump])
+	| otherwise							= (self, [])
 	where
 		vy' = (jumpVy2 - jumpVy) * (abs $ vx self) `div` runVx + jumpVy
 
@@ -251,7 +252,9 @@ shot kp self
 	where
 		canShot = pltype self == FireNario
 		shotPl = self { pat = patShot }
-		shotEv = [EvAddActor $ ActorWrapper $ newShot (x self) (y self) (lr self)]
+		shotEv = [	EvAddActor $ ActorWrapper $ newShot (x self) (y self) (lr self),
+					EvSound SndShot
+				]
 
 
 -- 更新処理
@@ -266,11 +269,12 @@ updatePlayer kp fld self =
 
 -- 通常時
 updateNormal :: KeyProc -> Field -> Player -> (Player, [Event])
-updateNormal kp fld self = (self'', ev' ++ ev'')
+updateNormal kp fld self = (self3, ev1 ++ ev2 ++ ev3)
 	where
-		(self', ev') = moveY $ scroll self $ checkX fld $ moveX kp self
-		(self'', ev'') = shot kp self'
-		moveY = checkCeil fld . doJump kp . checkFloor fld . fall (padPressing kp PadA)
+		(self1, ev1) = moveY $ scroll self $ checkX fld $ moveX kp self
+		(self2, ev2) = checkCeil fld self1
+		(self3, ev3) = shot kp self2
+		moveY = doJump kp . checkFloor fld . fall (padPressing kp PadA)
 
 -- 死亡時
 updateDead :: KeyProc -> Field -> Player -> (Player, [Event])

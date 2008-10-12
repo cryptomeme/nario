@@ -2,6 +2,9 @@ module Util where
 
 -- ユーティリティ関数
 
+-- ペアを作る
+pair a b = (a, b)
+
 -- |Replace i-th element of list to v.
 replace :: [a] -> Int -> a -> [a]
 replace ls i v = take i ls ++ [v] ++ drop  (i + 1) ls

@@ -3,6 +3,7 @@ module Event where
 import Images (ImageType)
 import Field (Cell)
 import {-# SOURCE #-} Actor (Actor(..), ActorWrapper(..))
+import Mixer
 
 data Event =
 		-- ブロックをたたいた x y super?
@@ -16,3 +17,6 @@ data Event =
 
 		-- スコア加算エフェクト
 	|	EvScoreAddEfe Int Int Int
+
+		-- サウンドを鳴らす
+	|	EvSound SoundType

@@ -25,12 +25,13 @@ import Actor.Flower
 import Actor.BrokenBlock
 import Actor.CoinGet
 import Actor.ScoreAdd
+import Mixer
 
 -- 背景色
 backColor = 0x5080FF
 
 -- 描画コマンド
-type Scr = Surface -> IO ()
+type Scr = Surface -> Mixer -> IO ()
 
 
 -- エントリ
@@ -40,9 +41,10 @@ main = do
 	setCaption wndTitle wndTitle
 	sur <- setVideoMode screenWidth screenHeight wndBpp [HWSURFACE, DOUBLEBUF, ANYFORMAT]
 	do
+		mixer <- createMixer
 		strm <- delayedStream (1000000 `div` frameRate) fetch
 		scrs <- process $ map snd $ takeWhile notQuit strm
-		mapM_ (\scr -> scr sur) scrs
+		mapM_ (\scr -> scr sur mixer) scrs
 	sdlQuit
 
 	where
@@ -81,7 +83,8 @@ data GameGame =
 		pl :: Player,
 		fld :: Field,
 		actors :: [ActorWrapper],
-		time :: Int
+		time :: Int,
+		snds :: [SoundType]
 	}
 
 
@@ -89,32 +92,33 @@ data GameGame =
 process :: [[SDLKey]] -> IO [Scr]
 process kss = do
 	imgres <- loadImageResource imageTypes
+	sndres <- loadSoundResource soundTypes
 	fldmap <- loadField 0
 
 	let tmpscrs = doTitle fldmap kss
-	let scrs = zipWith (common imgres) tmpscrs kss
-	return $ scrs ++ [final imgres]
+	let scrs = zipWith (common imgres sndres) tmpscrs kss
+	return $ scrs ++ [final imgres sndres]
 
 	where
 		-- 共通動作
-		common imgres scr ks sur = do
-			scr imgres sur
+		common imgres sndres scr ks sur mixer = do
+			scr imgres sndres sur mixer
 			if SDLK_s `elem` ks
 				then saveBMP sur "ss.bmp" >> return ()
 				else return ()
 			flipSurface sur
 			return ()
 		-- 後始末
-		final imgres sur = releaseImageResource imgres
+		final imgres sndres sur mixer = releaseImageResource imgres
 
 -- タイトル
-doTitle :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
+doTitle :: Field -> [[SDLKey]] -> [ImageResource -> SoundResource -> Scr]
 doTitle fldmap kss = loop kss
 	where
-		loop :: [[SDLKey]] -> [ImageResource -> Scr]
+		loop :: [[SDLKey]] -> [ImageResource -> SoundResource -> Scr]
 		loop (ks:kss) = res : left ks kss
 
-		res imgres sur = do
+		res imgres sndres sur mixer = do
 			fillRect sur Nothing backColor
 			renderTitle imgres sur
 
@@ -165,10 +169,10 @@ hitcheck player actors = foldl proc (player, [], []) actors
 
 
 -- ゲーム
-doGame :: Field -> [[SDLKey]] -> [ImageResource -> Scr]
+doGame :: Field -> [[SDLKey]] -> [ImageResource -> SoundResource -> Scr]
 doGame fldmap kss = loop (head kss) initialState kss
 	where
-		loop :: [SDLKey] -> GameGame -> [[SDLKey]] -> [ImageResource -> Scr]
+		loop :: [SDLKey] -> GameGame -> [[SDLKey]] -> [ImageResource -> SoundResource -> Scr]
 		loop bef gs (ks:kss) = scr' : left ks kss
 			where
 				(scr', gs') = updateProc (keyProc bef ks) gs
@@ -180,7 +184,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 					| otherwise					= loop ks gs' kss
 
 		-- 更新
-		updateProc :: KeyProc -> GameGame -> (ImageResource -> Scr, GameGame)
+		updateProc :: KeyProc -> GameGame -> (ImageResource -> SoundResource -> Scr, GameGame)
 		updateProc kp gs = (scr', gs')
 			where
 				time' = max 0 (time gs - 1)
@@ -194,10 +198,27 @@ doGame fldmap kss = loop (head kss) initialState kss
 				(pl'', actors'', ev'') = hitcheck pl' actors'
 
 				gstmp = gs { pl = pl'', fld = fld', actors = actors'', time = time' }
-				gs' = procEvent gstmp (plev ++ ev' ++ screv' ++ ev'')
-				scr' = renderProc gs'
+				allEvent = plev ++ ev' ++ screv' ++ ev''
+				gs' = procEvent gstmp allEvent
+				scr' imgres sndres sur mixer = do
+					mapM_ (\ev -> case ev of
+							EvSound sndtype	->	play sndtype
+							otherwise		->	return ()
+						) allEvent
+					renderProc gs' imgres sndres sur mixer
 
-		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * timeBase }
+					where
+						play sndtype = do
+							if False
+								then
+									playWav mixer $ lookup sndtype sndres
+								else do
+									-- 実際の playWav を呼び出すとたまに落ちるので、print に変更
+									putStrLn $ "play " ++ show sndtype
+									return ()
+
+		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * timeBase, snds = [] }
+
 
 -- ゲームオーバー
 doGameOver fldmap kss = doTitle fldmap kss
@@ -235,10 +256,11 @@ procEvent gs ev = foldl proc gs ev
 		proc gs (EvSetField cx cy c) = gs { fld = fieldSet (fld gs) cx cy c }
 		proc gs (EvAddActor act) = gs { actors = actors gs ++ [act] }
 		proc gs (EvScoreAddEfe sx sy pnt) = gs { actors = actors gs ++ [ActorWrapper $ newScoreAdd sx sy pnt] }
+		proc gs (EvSound sndtype) = gs
 
 -- 描画
-renderProc :: GameGame -> ImageResource -> Scr
-renderProc gs imgres sur = do
+renderProc :: GameGame -> ImageResource -> SoundResource -> Scr
+renderProc gs imgres sndres sur mixer = do
 	fillRect sur Nothing backColor
 
 	let scrx = getScrollPos (pl gs)
@@ -251,7 +273,6 @@ renderProc gs imgres sur = do
 	return ()
 
 -- 情報描画
-renderInfo :: GameGame -> ImageResource -> Scr
 renderInfo gs imgres sur = do
 	puts  3 1 "NARIO"
 	puts  3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
