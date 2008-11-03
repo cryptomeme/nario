@@ -6,7 +6,7 @@ module Font (
 	fontPutc
 ) where
 
-import Multimedia.SDL (blitSurface, pt, Rect(..), Surface)
+import Graphics.UI.SDL
 import Control.Monad (zipWithM_)
 import Data.Char (ord)
 
@@ -23,9 +23,8 @@ fontPut font sur x y str = zipWithM_ (\i c -> fontPutc font sur i y c) [x..] str
 
 -- Put char
 fontPutc font sur x y c = do
-	blitSurface (fontSurface font) (Just rc) sur pos
+	blitSurface (fontSurface font) (Just rc) sur (Just $ Rect (x * fontWidth font) (y * fontHeight font) w h)
 	where
-		pos = pt (x * (fontWidth font)) (y * (fontHeight font))
 		ic = ord c - ord ' '
 		u = (ic `mod` xn) * w
 		v = (ic `div` xn) * h

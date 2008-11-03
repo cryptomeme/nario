@@ -11,7 +11,7 @@ module Actor (
 	renderActors
 ) where
 
-import Multimedia.SDL (Surface)
+import Graphics.UI.SDL (Surface)
 
 import AppUtil (ImageResource, Rect)
 import Event (Event)

@@ -1,39 +1,39 @@
 module Mixer where
 
-import Multimedia.SDL
+import Graphics.UI.SDL
 import Data.IORef
 import Data.Maybe (catMaybes)
 import Util (pair)
 
-
+type AudioData = ()
 type Mixer = IORef [AudioData]
 
-freq = 22050
-format = AUDIO_S16LSB
-channel = 1
-samples = 4096
+--freq = 22050
+--format = AUDIO_S16LSB
+--channel = 1
+--samples = 4096
 
 createMixer = do
 	mixer <- newIORef []
-	openAudio freq format channel samples (cb mixer)
+--	openAudio freq format channel samples (cb mixer)
 	return mixer
-	where
-		cb mixer len = do
-			wavs <- readIORef mixer
-			lockAudio
-			writeIORef mixer $ filter (not . audioIsEnd) $ map (audioAdvance len) wavs
-			unlockAudio
-			return wavs
+--	where
+--		cb mixer len = do
+--			wavs <- readIORef mixer
+--			lockAudio
+--			writeIORef mixer $ filter (not . audioIsEnd) $ map (audioAdvance len) wavs
+--			unlockAudio
+--			return wavs
 
 playWav mixer Nothing = return ()
-playWav mixer (Just ad) = do
-	pauseAudio 1
-	lockAudio
-	modifyIORef mixer (++ [ad])
-	unlockAudio
-	pauseAudio 0
-	return ()
-
+--playWav mixer (Just ad) = do
+--	pauseAudio 1
+--	lockAudio
+--	modifyIORef mixer (++ [ad])
+--	unlockAudio
+--	pauseAudio 0
+--	return ()
+playWav mixer _ = return ()
 
 
 data SoundType =
@@ -51,9 +51,10 @@ soundTypes = [SndJump, SndShot, SndPunch]
 type SoundResource = [(SoundType, AudioData)]
 
 loadSoundResource :: [SoundType] -> IO SoundResource
-loadSoundResource sndtypes = mapM load sndtypes >>= return . catMaybes
-	where
-		load :: SoundType -> IO (Maybe (SoundType, AudioData))
-		load sndtype = do
-			dat <- loadWAV $ ("data/snd/" ++) $ soundFn sndtype
-			return $ dat >>= Just . pair sndtype
+--loadSoundResource sndtypes = mapM load sndtypes >>= return . catMaybes
+--	where
+--		load :: SoundType -> IO (Maybe (SoundType, AudioData))
+--		load sndtype = do
+--			dat <- loadWAV $ ("data/snd/" ++) $ soundFn sndtype
+--			return $ dat >>= Just . pair sndtype
+loadSoundResource sndtypes = return []

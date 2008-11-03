@@ -1,8 +1,10 @@
+{-# LANGUAGE ForeignFunctionInterface #-}
 -- Nario
 
 module Main where
 
-import Multimedia.SDL hiding (Event)
+import Graphics.UI.SDL hiding (Event)
+import Graphics.UI.SDL.Utilities
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Control.Concurrent (threadDelay)
 
@@ -27,25 +29,42 @@ import Actor.CoinGet
 import Actor.ScoreAdd
 import Mixer
 
+import Data.List
+import Foreign
+import Foreign.C.Types
+import Foreign.Ptr
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
+
+foreign export ccall "start_hs" main :: IO ()
+
 -- Background color
-backColor = 0x5080FF
+backColor = Pixel 0x5080FF
 
 -- Display command
 type Scr = Surface -> Mixer -> IO ()
+
+foreign import ccall unsafe "SDL_GetKeyState" sdlGetKeyState :: Ptr CInt -> IO (Ptr Word8)
+
+getKeyState :: IO [SDLKey]
+getKeyState = alloca $ \numkeysPtr -> do
+  keysPtr <- sdlGetKeyState numkeysPtr
+  numkeys <- peek numkeysPtr
+  (map Graphics.UI.SDL.Utilities.toEnum . map fromIntegral . findIndices (== 1)) `fmap` peekArray (fromIntegral numkeys) keysPtr
 
 
 -- Program etrny point
 main :: IO ()
 main = do
-	sdlInit [VIDEO]
+	Graphics.UI.SDL.init [InitVideo]
 	setCaption wndTitle wndTitle
-	sur <- setVideoMode screenWidth screenHeight wndBpp [HWSURFACE, DOUBLEBUF, ANYFORMAT]
+	sur <- setVideoMode screenWidth screenHeight wndBpp [HWSurface, DoubleBuf, AnyFormat]
 	do
 		mixer <- createMixer
 		strm <- delayedStream (1000000 `div` frameRate) fetch
 		scrs <- process $ map snd $ takeWhile notQuit strm
 		mapM_ (\scr -> scr sur mixer) scrs
-	sdlQuit
+	quit
 
 	where
 		-- fetch for environment
@@ -70,11 +89,11 @@ delayedStream microsec func = unsafeInterleaveIO $ do
 checkSDLEvent = do
 	ev <- pollEvent
 	case ev of
-		Just QuitEvent	-> return True
-		Just (KeyboardEvent { kbPress = True, kbKeysym = Keysym { ksSym = ks, ksMod = km } })
+		Quit	-> return True
+		KeyDown (Keysym { symKey = ks, symModifiers = km } )
 			| ks == SDLK_ESCAPE -> return True
-			| ks == SDLK_F4 && (KMOD_LALT `elem` km || KMOD_RALT `elem` km) -> return True
-		Nothing	-> return False
+			| ks == SDLK_F4 && (KeyModLeftAlt `elem` km || KeyModRightAlt `elem` km) -> return True
+		NoEvent	-> return False
 		_		-> checkSDLEvent
 
 
@@ -107,9 +126,9 @@ process kss = do
 			if SDLK_s `elem` ks
 				then saveBMP sur "ss.bmp" >> return ()
 				else return ()
-			flipSurface sur
+			Graphics.UI.SDL.flip sur
 			return ()
-		-- 後始末
+		-- Finalize
 		final imgres sndres sur mixer = releaseImageResource imgres
 
 -- Title
@@ -214,8 +233,8 @@ doGame fldmap kss = loop (head kss) initialState kss
 								then
 									playWav mixer $ lookup sndtype sndres
 								else do
-									-- 実際の playWav を呼び出すとたまに落ちるので、print に変更
-									putStrLn $ "play " ++ show sndtype
+									-- Instead of play wav, print message
+									--putStrLn $ "play " ++ show sndtype
 									return ()
 
 		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * timeBase, snds = [] }

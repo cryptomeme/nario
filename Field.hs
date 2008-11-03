@@ -17,7 +17,7 @@ module Field (
 	chr2img
 ) where
 
-import Multimedia.SDL
+import Graphics.UI.SDL
 
 import Const
 import Images

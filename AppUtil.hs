@@ -19,7 +19,7 @@ module AppUtil (
 	ishit
 ) where
 
-import Multimedia.SDL (Surface, SDLKey(..), loadBMP, freeSurface, surfacePixelFormat, displayFormat, pfPalette, setColorKey, SurfaceFlag(..), blitSurface, pt)
+import Graphics.UI.SDL
 import Data.Maybe (fromJust)
 
 import Const
@@ -81,21 +81,17 @@ loadImageResource = mapM load
 			freeSurface sur
 			return (imgtype, converted)
 
-		setNuki sur = do
-			let fmt = surfacePixelFormat sur
-			if not $ null $ pfPalette fmt
-				then setColorKey sur [SRCCOLORKEY] 0 >> return ()	-- パレット０番目をぬき色に
-				else return ()
+		setNuki sur = setColorKey sur [SrcColorKey] (Pixel 0) >> return ()		-- Set color key to palet 0
 
 releaseImageResource :: ImageResource -> IO ()
 releaseImageResource = mapM_ (\(t, sur) -> freeSurface sur)
 
 getImageSurface :: ImageResource -> ImageType -> Surface
-getImageSurface imgres = fromJust . flip lookup imgres
+getImageSurface imgres = fromJust . (`lookup` imgres)
 
 putimg :: Surface -> ImageResource -> ImageType -> Int -> Int -> IO ()
 putimg sur imgres imgtype x y = do
-	blitSurface (getImageSurface imgres imgtype) Nothing sur (pt x y)
+	blitSurface (getImageSurface imgres imgtype) Nothing sur (Just $ Rect x y 0 0)
 	return ()
 
 
@@ -106,7 +102,7 @@ cellCrd x = x `div` (chrSize * one)
 
 
 -- ========
-data Rect = Rect Int Int Int Int
+--data Rect = Rect Int Int Int Int
 
 
 ishit :: Rect -> Rect -> Bool
