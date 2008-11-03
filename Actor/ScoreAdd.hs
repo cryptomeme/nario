@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- スコアが増えるときの増分表示
+-- Score add animation
 
 module Actor.ScoreAdd (
 	newScoreAdd

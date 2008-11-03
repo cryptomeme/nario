@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- プレーヤーが撃つショット（ファイヤー）
+-- Shot (fire)
 
 module Actor.Shot (
 	newShot

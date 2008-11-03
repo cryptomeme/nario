@@ -2,18 +2,18 @@
 PROJECT = nario
 
 SRCS = $(wildcard *.hs) $(wildcard Actor/*.hs)
-OBJS = $(subst .hs,.o,$(SRCS)) $(subst .hs,.hi,$(SRCS))
+OBJDIR = obj
 
 all:	$(PROJECT).exe
 
 run:
 	$(PROJECT).exe
 
-$(PROJECT).exe:	$(SRCS)
-	ghc -o $(PROJECT) --make -O $(SRCS)
+$(PROJECT).exe:	$(OBJDIR) $(SRCS)
+	ghc -o $(PROJECT) --make -O -odir $(OBJDIR) -hidir $(OBJDIR) $(SRCS)
 
 clean:
-	rm -f $(OBJS)
+	rm -rf $(OBJDIR)
 	rm -f *.manifest
 	rm -f *.exe
 	rm -f *.hi-boot *.o-boot
@@ -21,6 +21,8 @@ clean:
 doc:
 	haddock -h -o man -l C:\\ghc\\haddock-2.0.0.0 -B c:\\ghc\\ghc-6.8.2 *.hs
 
+$(OBJDIR):
+	mkdir $(OBJDIR)
 
 imgs:
 	runghc -itool tool/listup-imgs.hs data/img > Images.hs

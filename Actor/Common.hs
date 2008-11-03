@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- 共通動作
+-- Common action
 
 module Actor.Common (
 	updateActorBase,

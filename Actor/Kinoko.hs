@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- きのこ
+-- Mushroom (power up item)
 
 module Actor.Kinoko (
 	newKinoko

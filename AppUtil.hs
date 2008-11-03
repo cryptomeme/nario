@@ -25,7 +25,7 @@ import Data.Maybe (fromJust)
 import Const
 import Images
 
--- キーボード処理
+-- Keyboard
 
 data KeyState =
 	Pushed | Pushing | Released | Releasing
@@ -48,7 +48,7 @@ keyProc bef cur k
 		cp = k `elem` cur
 
 
--- パッド
+-- Pad
 
 data PadBtn =
 	PadU | PadD | PadL | PadR | PadA | PadB
@@ -66,11 +66,11 @@ mapSDLKey PadB = [SDLK_LSHIFT, SDLK_RSHIFT]
 
 
 
--- 画像リソース
+-- Image resource
 type ImageResource = [(ImageType, Surface)]
 
 
--- 画像リソース読み込み
+-- Load image resource
 loadImageResource :: [ImageType] -> IO ImageResource
 loadImageResource = mapM load
 	where
@@ -99,7 +99,7 @@ putimg sur imgres imgtype x y = do
 	return ()
 
 
--- 固定座標系からセル座標系に
+-- From fixed point integer to cell coordinate
 cellCrd :: Int -> Int
 cellCrd x = x `div` (chrSize * one)
 

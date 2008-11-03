@@ -1,6 +1,6 @@
 module Const where
 
--- ウィンドウ周り
+-- Window
 wndTitle = "NARIO in Haskell"
 screenWidth = 256 :: Int
 screenHeight = 224 :: Int
@@ -8,24 +8,24 @@ wndBpp = 32 :: Int
 
 frameRate = 60 :: Int
 
--- ゲーム時間の基準
+-- Game timer
 timeBase = 22 :: Int
 
 
--- 固定小数点での１
+-- One for fixed point integer
 one = 256 :: Int
 
--- １キャラのサイズ
+-- Size of charcter
 chrSize = 16 :: Int
 
--- 重力
+-- Gravity
 gravity = one * 2 `div` 5
 
--- 最大落下速度
+-- Maximum speed for falling
 maxVy = one * 5
 
 
--- ポイント
+-- Score point
 pointKuribo		= 100	:: Int
 pointNokonoko	= 100	:: Int
 pointKinoko		= 1000	:: Int

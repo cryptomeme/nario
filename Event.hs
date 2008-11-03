@@ -6,17 +6,17 @@ import {-# SOURCE #-} Actor (Actor(..), ActorWrapper(..))
 import Mixer
 
 data Event =
-		-- ブロックをたたいた x y super?
+		-- Hit block: x y super?
 		EvHitBlock ImageType Int Int Bool
 
-		-- フィールドを変更
+		-- Modify field
 	|	EvSetField Int Int Cell
 
-		-- アクター追加
+		-- Add actor
 	|	EvAddActor ActorWrapper
 
-		-- スコア加算エフェクト
+		-- Add score
 	|	EvScoreAddEfe Int Int Int
 
-		-- サウンドを鳴らす
+		-- Play SE
 	|	EvSound SoundType

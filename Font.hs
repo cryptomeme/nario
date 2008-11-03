@@ -18,10 +18,10 @@ data Font = Font {
 	}
 
 
--- 文字列表示
+-- Put string
 fontPut font sur x y str = zipWithM_ (\i c -> fontPutc font sur i y c) [x..] str
 
--- １文字表示
+-- Put char
 fontPutc font sur x y c = do
 	blitSurface (fontSurface font) (Just rc) sur pos
 	where

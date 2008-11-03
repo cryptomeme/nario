@@ -27,14 +27,14 @@ import Actor.CoinGet
 import Actor.ScoreAdd
 import Mixer
 
--- 背景色
+-- Background color
 backColor = 0x5080FF
 
--- 描画コマンド
+-- Display command
 type Scr = Surface -> Mixer -> IO ()
 
 
--- エントリ
+-- Program etrny point
 main :: IO ()
 main = do
 	sdlInit [VIDEO]
@@ -48,14 +48,15 @@ main = do
 	sdlQuit
 
 	where
-		-- 環境のフェッチ
+		-- fetch for environment
 		fetch = do
 			quit <- checkSDLEvent
 			ks <- getKeyState
 			return (quit, ks)
 		notQuit = not . fst
 
--- 遅延ストリーム
+-- Delayed stream
+-- return result list of action, interval microsec
 -- microsec 秒ごとに func を実行したアクションの結果をリストとして返す
 delayedStream :: Int -> IO a -> IO [a]
 delayedStream microsec func = unsafeInterleaveIO $ do
@@ -64,8 +65,8 @@ delayedStream microsec func = unsafeInterleaveIO $ do
 	xs <- delayedStream microsec func
 	return $ x:xs
 
--- SDL のイベントを処理
--- 終了イベントがきたら True を返す
+-- Process SDL events
+-- return True if quit event has come
 checkSDLEvent = do
 	ev <- pollEvent
 	case ev of
@@ -77,7 +78,7 @@ checkSDLEvent = do
 		_		-> checkSDLEvent
 
 
--- 状態
+-- State of Game
 data GameGame =
 	GameGame {
 		pl :: Player,
@@ -88,7 +89,7 @@ data GameGame =
 	}
 
 
--- キー入力全体を処理して描画コマンド列を返す
+-- Process whole key input and return display command list
 process :: [[SDLKey]] -> IO [Scr]
 process kss = do
 	imgres <- loadImageResource imageTypes
@@ -100,7 +101,7 @@ process kss = do
 	return $ scrs ++ [final imgres sndres]
 
 	where
-		-- 共通動作
+		-- Common Action
 		common imgres sndres scr ks sur mixer = do
 			scr imgres sndres sur mixer
 			if SDLK_s `elem` ks
@@ -111,7 +112,7 @@ process kss = do
 		-- 後始末
 		final imgres sndres sur mixer = releaseImageResource imgres
 
--- タイトル
+-- Title
 doTitle :: Field -> [[SDLKey]] -> [ImageResource -> SoundResource -> Scr]
 doTitle fldmap kss = loop kss
 	where
@@ -127,7 +128,7 @@ doTitle fldmap kss = loop kss
 			| otherwise				= loop kss
 
 
--- マップのスクロールに応じたイベント
+-- Scroll event
 scrollEvent :: Field -> Int -> (Field, [Event])
 scrollEvent fld cx
 	| cx < length (head fld)	= foldl proc (fld, []) $ zip [0..] cols
@@ -148,7 +149,7 @@ scrollEvent fld cx
 
 
 
--- 当たり判定
+-- Collision detection and response
 hitcheck :: Player -> [ActorWrapper] -> (Player, [ActorWrapper], [Event])
 hitcheck player actors = foldl proc (player, [], []) actors
 	where
@@ -168,7 +169,7 @@ hitcheck player actors = foldl proc (player, [], []) actors
 				ev' = ev ++ evtmp
 
 
--- ゲーム
+-- Game
 doGame :: Field -> [[SDLKey]] -> [ImageResource -> SoundResource -> Scr]
 doGame fldmap kss = loop (head kss) initialState kss
 	where
@@ -183,7 +184,7 @@ doGame fldmap kss = loop (head kss) initialState kss
 					| isPlayerDead || timeOver	= doGameOver fldmap kss
 					| otherwise					= loop ks gs' kss
 
-		-- 更新
+		-- Update
 		updateProc :: KeyProc -> GameGame -> (ImageResource -> SoundResource -> Scr, GameGame)
 		updateProc kp gs = (scr', gs')
 			where
@@ -220,11 +221,11 @@ doGame fldmap kss = loop (head kss) initialState kss
 		initialState = GameGame { pl = newPlayer, fld = fldmap, actors = [], time = 400 * timeBase, snds = [] }
 
 
--- ゲームオーバー
+-- Game over
 doGameOver fldmap kss = doTitle fldmap kss
 
 
--- イベントを処理
+-- Process events
 procEvent :: GameGame -> [Event] -> GameGame
 procEvent gs ev = foldl proc gs ev
 	where
@@ -258,7 +259,7 @@ procEvent gs ev = foldl proc gs ev
 		proc gs (EvScoreAddEfe sx sy pnt) = gs { actors = actors gs ++ [ActorWrapper $ newScoreAdd sx sy pnt] }
 		proc gs (EvSound sndtype) = gs
 
--- 描画
+-- Render
 renderProc :: GameGame -> ImageResource -> SoundResource -> Scr
 renderProc gs imgres sndres sur mixer = do
 	fillRect sur Nothing backColor
@@ -272,7 +273,7 @@ renderProc gs imgres sndres sur mixer = do
 
 	return ()
 
--- 情報描画
+-- Render information
 renderInfo gs imgres sur = do
 	puts  3 1 "NARIO"
 	puts  3 2 $ deciWide 6 '0' $ getPlayerScore (pl gs)
@@ -285,7 +286,7 @@ renderInfo gs imgres sur = do
 		puts = fontPut font sur
 		font = Font (getImageSurface imgres ImgFont) 8 8 16
 
--- タイトル画面
+-- Render title screen
 renderTitle imgres sur = do
 	putimg sur imgres ImgTitle (5*8) (3*8)
 --	puts 13 14 "@1985 NINTENDO"

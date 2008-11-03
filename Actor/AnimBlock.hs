@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- ブロックを叩いたときのバウンド演出
+-- Block bounce animation
 
 module Actor.AnimBlock (
 	newAnimBlock

@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- ブロックの破片
+-- Broken block
 
 module Actor.BrokenBlock (
 	newBrokenBlock

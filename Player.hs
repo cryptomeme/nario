@@ -1,4 +1,4 @@
--- プレーヤー
+-- Player (nario)
 
 module Player (
 	Player(..),
@@ -47,15 +47,15 @@ gravity2 = one `div` 6		-- Aを長押ししたときの重力
 stampVy = -8 * gravity
 undeadFrame = frameRate * 2
 
--- 種類
+-- Type of player
 data PlayerType = SmallNario | SuperNario | FireNario
 	deriving (Eq)
 
--- 状態
+-- State
 data PlayerState = Normal | Dead
 	deriving (Eq)
 
--- 構造体
+-- Structure
 data Player = Player {
 	pltype :: PlayerType,
 	plstate :: PlayerState,
@@ -118,7 +118,7 @@ imgTableFire = [
 	]
 
 
--- 横移動
+-- Move horizontal
 moveX :: KeyProc -> Player -> Player
 moveX kp self =
 	if stand self
@@ -163,7 +163,7 @@ moveX kp self =
 			| otherwise		= ((anm self) + (abs vx')) `mod` (walkPatNum * anmCnt)
 		anmCnt = walkVx * 3
 
--- 横移動チェック
+-- Check wall for moving horizontal direction
 checkX :: Field -> Player -> Player
 checkX fld self
 	| dir == 0	= check (-1) $ check 1 $ self
@@ -179,7 +179,7 @@ checkX fld self
 				ofsx (-1) = -6 * one
 				ofsx   1  =  5 * one
 
--- スクロール
+-- Adjust horizontal scroll position
 scroll :: Player -> Player -> Player
 scroll opl self = self { scrx = scrx' }
 	where
@@ -191,7 +191,7 @@ scroll opl self = self { scrx = scrx' }
 		d = x self `div` one - scrx self - (max odx dx)
 
 
--- 重力による落下
+-- Fall by gravity
 fall :: Bool -> Player -> Player
 fall abtn self
 	| stand self	= self
@@ -204,7 +204,7 @@ fall abtn self
 		y' = y self + vy'
 
 
--- 床をチェック
+-- Check for stand on a floor
 checkFloor :: Field -> Player -> Player
 checkFloor fld self
 	| stand'	= self { stand = stand', y = ystand, vy = 0 }
@@ -217,7 +217,7 @@ checkFloor fld self
 
 		isGround ofsx = isBlock $ fieldRef fld (cellCrd $ x self + ofsx * one) (cellCrd (y self))
 
--- 上をチェック
+-- Check upper wall
 checkCeil :: Field -> Player -> (Player, [Event])
 checkCeil fld self
 	| stand self || vy self >= 0 || not isCeil	= (self, [])
@@ -235,7 +235,7 @@ checkCeil fld self
 		yground y = (cellCrd y) * (chrSize * one)
 		y' = ((cy + 1) * chrSize + yofs) * one
 
--- ジャンプする？
+-- Do jump?
 doJump :: KeyProc -> Player -> (Player, [Event])
 doJump kp self
 	| stand self && padPressed kp PadA	= (self { vy = vy', stand = False, pat = patJump }, [EvSound SndJump])
@@ -244,7 +244,7 @@ doJump kp self
 		vy' = (jumpVy2 - jumpVy) * (abs $ vx self) `div` runVx + jumpVy
 
 
--- ショットを撃つ？
+-- Do shot?
 shot :: KeyProc -> Player -> (Player, [Event])
 shot kp self
 	| canShot && padPressed kp PadB	= (shotPl, shotEv)
@@ -257,7 +257,7 @@ shot kp self
 				]
 
 
--- 更新処理
+-- Update
 updatePlayer :: KeyProc -> Field -> Player -> (Player, [Event])
 updatePlayer kp fld self =
 	case plstate self of
@@ -267,7 +267,7 @@ updatePlayer kp fld self =
 		self' = decUndead self
 		decUndead pl = pl { undeadCount = max 0 $ undeadCount pl - 1 }
 
--- 通常時
+-- In normal state
 updateNormal :: KeyProc -> Field -> Player -> (Player, [Event])
 updateNormal kp fld self = (self3, ev1 ++ ev2 ++ ev3)
 	where
@@ -276,69 +276,69 @@ updateNormal kp fld self = (self3, ev1 ++ ev2 ++ ev3)
 		(self3, ev3) = shot kp self2
 		moveY = doJump kp . checkFloor fld . fall (padPressing kp PadA)
 
--- 死亡時
+-- In dead state
 updateDead :: KeyProc -> Field -> Player -> (Player, [Event])
 updateDead kp fld self = (fall False self, [])
 
--- スクロール位置取得
+-- Get scroll position
 getScrollPos :: Player -> Int
 getScrollPos = scrx
 
--- Ｘ座標取得
+-- Get x position
 getPlayerX :: Player -> Int
 getPlayerX = x
 
--- Ｙ座標取得
+-- Get Y position
 getPlayerY :: Player -> Int
 getPlayerY = y
 
--- Ｙ速度取得
+-- Get y velocity
 getPlayerVY :: Player -> Int
 getPlayerVY = vy
 
--- 当たり判定用矩形
+-- Get hit rect
 getPlayerHitRect :: Player -> Rect
 getPlayerHitRect self = Rect (xx - 6) (yy - 16) (xx + 6) yy
 	where
 		xx = x self `div` one
 		yy = y self `div` one
 
--- コイン枚数取得
+-- Get coin num
 getPlayerCoin :: Player -> Int
 getPlayerCoin = coin
 
--- スコア取得
+-- Get score
 getPlayerScore :: Player -> Int
 getPlayerScore = score
 
--- タイプ取得
+-- Get type
 getPlayerType :: Player -> PlayerType
 getPlayerType = pltype
 
--- タイプ設定
+-- Set type
 setPlayerType :: PlayerType -> Player -> Player
 setPlayerType t self = self { pltype = t }
 
--- ダメージを与える
+-- Set damage
 setPlayerDamage :: Player -> Player
 setPlayerDamage self
 	| undeadCount self > 0			= self
 	| pltype self == SmallNario		= self { plstate = Dead, pat = patDead, vy = jumpVy, stand = False }
 	| otherwise						= self { pltype = SmallNario, undeadCount = undeadFrame }
 
--- 敵を踏み潰した
+-- Stamp enemy
 stampPlayer :: Player -> Player
 stampPlayer self = self { vy = stampVy }
 
--- コイン取得
+-- Player get a coin
 playerGetCoin :: Player -> Player
 playerGetCoin self = self { coin = (coin self + 1) `mod` 100 }
 
--- スコア加算
+-- Add score
 addScore :: Int -> Player -> Player
 addScore a self = self { score = score self + a }
 
--- 描画
+-- Render
 renderPlayer sur imgres scrx self = do
 	if undeadCount self == 0 || (undeadCount self .&. 1) /= 0
 		then putimg sur imgres imgtype sx posy

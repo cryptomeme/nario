@@ -1,7 +1,7 @@
 ﻿{-# LANGUAGE ExistentialQuantification #-}
 -- -*- mode: haskell; Encoding: UTF-8 -*-
 
--- ゲーム内に登場するオブジェクト
+-- Object that appear in the game
 
 module Actor (
 	Actor(..),

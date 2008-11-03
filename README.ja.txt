@@ -1,35 +1,37 @@
 
-Make "Super Nario GC"
+Super Nario GC
 http://d.hatena.ne.jp/authorNari/20080422/1208880928
 
-in Haskell
+を Haskell/HSDL で作る
 
 
 
-* Operation
-	Cursor key, ijkl
-		Move up, down, left, right
+★操作
+	カーソルキー, ijkl
+		上下左右
 
-	Space key, z
-		Jump (A button)
+	スペースキー, z
+		ジャンプ（Aボタン）
 
-	Shift key
-		Dash (B button)
+	シフトキー
+		ダッシュ（Bボタン）
 
-	Escape key
-		Quit application
+	エスケープキー
+		終了
 
 
 
-* Files
+★ファイル構成
 	data
+		データ
 	data/img
-		images
+		画像データ
 
 
 
-* Environment
-	Haskell compiler (GHC)
+★ビルド
+・必要なもの
+	Haskell コンパイラ
 
 	SDL
 	http://www.libsdl.org/
@@ -37,29 +39,30 @@ in Haskell
 	HSDL
 	http://fxp.hp.infoseek.co.jp/haskell/HSDL/
 
-  * Build
+　○ビルド
 	make
 
-  * Execute
+　○実行
+	できた実行ファイルを起動する、または
 	make run
 
 
 
-* Reference
+★参考
 	Super Nario GC
 	http://d.hatena.ne.jp/authorNari/20080422/1208880928
 
-	1-1 map
+	1-1 マップ
 	http://www.geocities.co.jp/SiliconValley-Sunnyvale/6160/newtech/m11.htm
 
-	Font
+	フォント
 	http://qtchicks.hp.infoseek.co.jp/fonts-nintendo.html
 
 	unsafeInterleaveIO
 	http://d.hatena.ne.jp/tanakh/20040803#p1
 
-	Existential type
+	存在型
 	http://d.hatena.ne.jp/syd_syd/20080805#p2
 
-	Cyclic import problem in Haskell
+	Haskellの循環import問題 - ABAの日誌
 	http://d.hatena.ne.jp/ABA/20060627#p1

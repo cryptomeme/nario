@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- クリボー
+-- Kuribo
 
 module Actor.Kuribo (
 	newKuribo
@@ -52,7 +52,7 @@ newKuribo cx cy =
 	Kuribo { x = cx * chrSize * one + chrSize * one `div` 2, y = (cy+1) * chrSize * one, vx = -one `div` 2, vy = 0, cnt = 0 }
 
 
--- 踏みつけられたクリボー
+-- Stamped Kuribo
 data StampedKuribo = StampedKuribo {
 	sx :: Int,
 	sy :: Int,

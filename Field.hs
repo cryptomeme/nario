@@ -1,8 +1,8 @@
 
--- フィールド
+-- Field
 {-
-	' '		空白
-	'*'		見えない壁（壁を下から叩いたときに一時的に見えない壁に置き換える）
+	' '		Space
+	'*'		Invisible wall (Temporal char when player punch a wall)
 -}
 
 module Field (
@@ -28,9 +28,9 @@ type Cell = Char
 type Field = [[Cell]]
 
 
--- マップ
+-- Map
 
--- マップ読み込み
+-- Load map
 loadField :: Int -> IO Field
 loadField stage = readFile fn >>= return . lines
 	where

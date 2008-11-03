@@ -1,5 +1,5 @@
 ﻿-- -*- mode: haskell; Encoding: UTF-8 -*-
--- 甲羅
+-- Shell of tortoise
 
 module Actor.Koura (
 	newKoura
