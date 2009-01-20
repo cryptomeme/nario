@@ -7,7 +7,7 @@
 extern void __stginit_Main ( void );
 #endif
 
-#include "SDL.h"
+#include <SDL/SDL.h>
 
 int main(int argc, char *argv[])
 {
