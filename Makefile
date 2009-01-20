@@ -7,8 +7,7 @@ OBJS = $(addprefix $(OBJDIR)/,$(subst .hs,.o,$(SRCS)))
 
 CSRCS = $(wildcard *.c)
 
-SDLINCPATH = C:\\cygwin\\usr\\local\\include\\SDL
-GHCOPT = -O -no-hs-main -odir $(OBJDIR) -hidir $(OBJDIR) -stubdir $(OBJDIR) -I$(SDLINCPATH) -I$(OBJDIR)
+GHCOPT = -O -no-hs-main -odir $(OBJDIR) -hidir $(OBJDIR) -stubdir $(OBJDIR) -I$(OBJDIR)
 
 all:	$(PROJECT).exe
 
