@@ -12,10 +12,10 @@ GHCOPT = -O -no-hs-main -odir $(OBJDIR) -hidir $(OBJDIR) -stubdir $(OBJDIR) -I$(
 all:	$(PROJECT).exe
 
 run:
-	$(PROJECT).exe
+	./$(PROJECT).exe
 
 $(PROJECT).exe:	objs
-	ghc --make -o $(PROJECT) $(GHCOPT) $(SRCS) $(CSRCS)
+	ghc --make -o $(PROJECT).exe $(GHCOPT) $(SRCS) $(CSRCS)
 
 objs:	$(OBJDIR) $(SRCS)
 	ghc -c --make $(GHCOPT) $(SRCS)

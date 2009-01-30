@@ -76,10 +76,10 @@ main = do
 
 -- Delayed stream
 -- return result list of action, interval microsec
--- microsec 秒ごとに func を実行したアクションの結果をリストとして返す
 delayedStream :: Int -> IO a -> IO [a]
 delayedStream microsec func = unsafeInterleaveIO $ do
-	threadDelay microsec
+--	threadDelay microsec	-- Using this cause serious slow down in Ubuntu (bad precision?)
+	delay (fromInteger (toInteger (microsec `div` 1000)))		-- SDL.Time.delay
 	x <- func
 	xs <- delayedStream microsec func
 	return $ x:xs
