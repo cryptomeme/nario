@@ -6,14 +6,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6.0.3
+    - name: Install System Libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsdl1.2-dev
     - uses: haskell-actions/setup@v2.7.0
       with:
         ghc-version: '9.14.1'
         cabal-version: '3.16.1.0'
-    - name: Install System Libraries
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libsdl2-dev
     - name: Install dependencies
       run: |
         cabal update
