@@ -5,8 +5,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-haskell@v1
+    - uses: actions/checkout@v6.0.3
+    - uses: haskell-actions/setup@v2.7.0
       with:
         ghc-version: '9.14.1'
         cabal-version: '3.16.1.0'
