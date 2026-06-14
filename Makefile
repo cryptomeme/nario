@@ -7,7 +7,9 @@ OBJS = $(addprefix $(OBJDIR)/,$(subst .hs,.o,$(SRCS)))
 
 CSRCS = $(wildcard *.c)
 
-GHCOPT = -O -no-hs-main -odir $(OBJDIR) -hidir $(OBJDIR) -stubdir $(OBJDIR) -I$(OBJDIR)
+SDL_CFLAGS := $(shell sdl-config --cflags 2>/dev/null)
+GHCOPT = -O -no-hs-main -odir $(OBJDIR) -hidir $(OBJDIR) -stubdir $(OBJDIR) -I$(OBJDIR) -optc-I/opt/homebrew/include $(SDL_CFLAGS)
+LINKOPT = -optl-L/opt/homebrew/lib -optl-lSDLmain -optl-lSDL -framework Cocoa
 
 all:	$(PROJECT).exe
 
@@ -15,7 +17,7 @@ run:
 	./$(PROJECT).exe
 
 $(PROJECT).exe:	objs
-	ghc --make -o $(PROJECT).exe $(GHCOPT) $(SRCS) $(CSRCS)
+	ghc --make -o $(PROJECT).exe $(GHCOPT) $(LINKOPT) $(SRCS) $(CSRCS)
 
 objs:	$(OBJDIR) $(SRCS)
 	ghc -c --make $(GHCOPT) $(SRCS)
