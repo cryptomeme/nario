@@ -64,10 +64,12 @@ executable nario
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.22.0.0
+    build-depends:
+        base ^>=4.22.0.0,
+        SDL ^>=0.6.7.0
 
     -- Directories containing source files.
-    hs-source-dirs:   app
+    hs-source-dirs:   .
 
     -- Base language which the package is written in.
     default-language: Haskell2010
