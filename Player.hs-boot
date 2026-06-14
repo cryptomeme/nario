@@ -1,3 +1,3 @@
 module Player where
 
-data Player :: *
+data Player

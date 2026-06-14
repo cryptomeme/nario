@@ -19,7 +19,7 @@ import Field (Field)
 import {-# SOURCE #-} Player (Player)
 
 
-class Actor (a :: *) where
+class Actor a where
 	update :: Field -> a -> (a, [Event])
 	render :: a -> ImageResource -> Int -> Surface -> IO ()
 
